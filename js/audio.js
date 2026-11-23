@@ -374,6 +374,55 @@ window.Sound = (function () {
     }
   }
 
+  // ---------------- minigame (CLUTCH) ----------------
+  function gunshot() {
+    if (!ctx || ended) return;
+    const t = now();
+    noiseBurst(sfx, t, 0.12, 1600, 0.6, 0.22, 'lowpass');
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(55, t + 0.09);
+    env(g, t, 0.28, 0.002, 0.1);
+    o.connect(g); g.connect(sfx);
+    o.start(t);
+    o.stop(t + 0.12);
+  }
+  function hitmark(head) {
+    if (!ctx || ended) return;
+    const t = now();
+    [head ? 1700 : 1150, head ? 2550 : 0].forEach((f, i) => {
+      if (!f) return;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      env(g, t + i * 0.05, 0.06, 0.002, head ? 0.12 : 0.04);
+      o.connect(g); g.connect(sfx);
+      o.start(t + i * 0.05);
+      o.stop(t + i * 0.05 + 0.15);
+    });
+  }
+  function enemyShot() {
+    if (!ctx || ended) return;
+    noiseBurst(sfx, now(), 0.1, 800, 0.7, 0.12, 'lowpass');
+  }
+  function reload() {
+    if (!ctx || ended) return;
+    const t = now();
+    [[0, 320], [0.5, 520], [0.9, 420]].forEach(([dt, f]) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = f;
+      env(g, t + dt, 0.025, 0.002, 0.03);
+      o.connect(g); g.connect(sfx);
+      o.start(t + dt);
+      o.stop(t + dt + 0.05);
+    });
+  }
+
   // Presença: a criatura aparece num canto (grave abafado + sussurro)
   function presence() {
     if (!ctx || ended) return;
@@ -580,6 +629,10 @@ window.Sound = (function () {
     grabStart,
     shatter,
     presence,
+    gunshot,
+    hitmark,
+    enemyShot,
+    reload,
     setDaze,
     startMusic,
     update,

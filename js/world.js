@@ -142,11 +142,11 @@ window.World = (function () {
   // e a TV fica na parede que faz fronteira com o meu quarto.
   // sofá de 3 lugares colado na parede da esquerda (é ele que divide a sala da cozinha);
   // painel da TV ocupando toda a parede do meu quarto; corredor estreito entre os dois, sem mesinha.
-  // O abajur fica ao lado do braço do sofá, no canto da janela.
+  // O abajur fica no meio da passagem entre o sofá e a estante, encostado na parede da janela.
   add('sofa', 13, 4, 2.5, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
-  add('lamp', 15.6, 4.1, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
+  add('lamp', 16.6, 4.05, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
   add('rug', 15.75, 5.1, 2.6, 3.5, { solid: false, decor: true });
-  add('tvPanel', 18.5, 4, 1.5, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
+  add('tvPanel', 18.5, 4, 1.5, 5, { desc: 'a tv desligada. do lado, a impressora e o modem piscando.' });
   add('window', 15, 3, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   add('plant', 12.05, 7.5, 0.9, 0.95, { desc: 'a planta atrás do sofá. algumas folhas secando.' }); // no vão atrás do sofá
   // Suíte
@@ -157,7 +157,7 @@ window.World = (function () {
   add('window', 23, 1, 2, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   add('bed', 25, 2, 3, 7, { blanket: '#3c4560', messy: true, desc: 'a cama desarrumada. não consigo dormir.' });
   add('officeChair', 24.7, 9.35, 1.1, 0.85, { desc: 'a cadeira ainda quente.' });
-  add('pcDesk', 23, 10.3, 5, 1.7, { desc: 'o computador ligado. a tela me encara de volta.' });
+  add('pcDesk', 23, 10.3, 5, 1.7, { action: 'pc', desc: 'o computador ligado. a tela me encara de volta.' });
   // Banheiro
   add('showerFloor', 13, 17.6, 4, 2.4, { solid: false, decor: true, desc: 'o chuveiro pinga devagar.' });
   add('bathSink', 13, 13, 1, 1.6, { action: 'mirror', mirror: 'banheiro' }); // olhar no espelho (ver js/mirror.js)
@@ -182,7 +182,7 @@ window.World = (function () {
   const WARM = [1.0, 0.72, 0.42];
   const LIGHTS = {
     sala: [
-      { x: 16 * T, y: 4.5 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
+      { x: 17 * T, y: 4.45 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
       { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
@@ -553,11 +553,18 @@ window.World = (function () {
         R(ctx, x + w - 6, ty, 3, th, '#0c0c10'); // TV
         R(ctx, x + w - 6, ty, 1, th, '#33333e');
         R(ctx, x + w - 6, ty + th - 2, 1, 1, '#c02020'); // ledzinho de standby
-        // enfeites em cima do rack
-        disc(ctx, x + 7, y + 5, 3, '#3f6b3a');
-        R(ctx, x + 6, y + 3, 2, 2, '#5f9a4e');
-        R(ctx, x + 4, y + h - 9, 7, 5, '#2c2c34'); // caixinha de som
-        R(ctx, x + 5, y + h - 8, 2, 2, '#4a4a56');
+        // impressora em cima do rack
+        R(ctx, x + 3, y + 3, 12, 11, '#bfc1c6');
+        R(ctx, x + 3, y + 3, 12, 1, '#dcdee2');
+        R(ctx, x + 4, y + 5, 10, 2, '#4a4c54'); // abertura do papel
+        R(ctx, x + 5, y + 1, 8, 3, '#f2f2ee'); // folha saindo
+        R(ctx, x + 12, y + 11, 2, 1, '#3a8a4a');
+        // modem wi-fi com antenas
+        R(ctx, x + 4, y + h - 12, 10, 6, '#18181e');
+        R(ctx, x + 4, y + h - 12, 10, 1, '#2c2c36');
+        R(ctx, x + 5, y + h - 15, 1, 3, '#2c2c36');
+        R(ctx, x + 12, y + h - 15, 1, 3, '#2c2c36');
+        for (let i = 0; i < 3; i++) R(ctx, x + 6 + i * 2, y + h - 9, 1, 1, '#2a6a3a');
         break;
       }
       case 'plant': {
@@ -1059,6 +1066,19 @@ window.World = (function () {
   function drawEmissive(ctx, roomId, cam, time, k, occluded) {
     if (k <= 0.02) return;
     const hidden = (x, y) => occluded && occluded(x, y);
+    if (roomId === 'sala') {
+      // luzinhas do modem piscando, em cima da estante
+      const prev = ctx.globalAlpha;
+      for (let i = 0; i < 3; i++) {
+        if (Math.sin(time * (3 + i * 2.3) + i) < -0.2) continue;
+        const lx = Math.round(18.5 * T + 6 + i * 2 - cam.x), ly = Math.round(9 * T - 9 - cam.y);
+        if (hidden(lx, ly)) continue;
+        ctx.globalAlpha = prev * k;
+        R(ctx, lx, ly, 1, 1, '#4cff8a');
+      }
+      ctx.globalAlpha = prev;
+      return;
+    }
     if (roomId === 'meu_quarto') {
       // luzinha de notificação piscando no celular em cima da cômoda
       const lx = Math.round(23 * T + 19 - cam.x), ly = Math.round(2 * T + 4 - cam.y);

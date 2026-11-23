@@ -46,6 +46,12 @@ window.CONFIG = {
     { name: 'Pai', heart: '#e0404a', preview: 'bom dia campeao', sent: true, read: false, color: '#5a7a6a' },
   ],
 
+  // Easter egg no computador do meu quarto: minigame de tiro tático
+  MINIGAME_CHANCE: 0.05,
+  MINIGAME_SAFE_GAP: 55, // só abre se faltar mais que isso (s) para o drop: a partida acaba antes
+  MINIGAME_WIN: 'ganhei. pelo menos uma coisa deu certo hoje.',
+  MINIGAME_LOSE: 'perdi. nem nisso eu presto hoje.',
+
   // Aparição: chance da criatura do espelho surgir longe dele ao entrar/sair de um cômodo
   APPARITION_CHANCE: 0.03,
 

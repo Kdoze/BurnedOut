@@ -12,6 +12,7 @@
     hud: QS.has('debug'),
     creature: QS.has('creature'), // força a criatura no espelho
     apparition: QS.has('apparition'), // força a aparição em toda troca de cômodo
+    minigame: QS.has('minigame'), // força o minigame no computador
   };
 
   const screen = document.getElementById('screen');
@@ -276,6 +277,16 @@
         Phone.open();
         return;
       }
+      if (f && f.action === 'pc') {
+        // easter egg: às vezes abre o minigame (nunca perto da crise)
+        const safe = t < C.TREMBLE_AT - C.MINIGAME_SAFE_GAP;
+        if (safe && (DEBUG.minigame || Math.random() < C.MINIGAME_CHANCE)) {
+          Minigame.open();
+          return;
+        }
+        openDialog(f.desc);
+        return;
+      }
       if (f && f.desc) {
         openDialog(f.desc);
         return;
@@ -287,6 +298,12 @@
     if (trans) return;
     if (Phone.active) {
       Phone.update(dt, Input.consumeAction(), Input.consumeBack());
+      return;
+    }
+    if (Minigame.active) {
+      const r = Minigame.update(dt, Input.consumeAction(), Input.consumeBack());
+      if (r === 'won') openDialog(C.MINIGAME_WIN);
+      else if (r === 'lost') openDialog(C.MINIGAME_LOSE);
       return;
     }
     if (Mirror.active) {
@@ -412,6 +429,7 @@
       Mirror.reset(); // nunca mistura o espelho com a crise
       Phone.close();
       Apparition.clear();
+      Minigame.close();
       if (trans) {
         if (trans.next) room = trans.next;
         trans = null;
@@ -614,6 +632,11 @@
     const D = despair(t);
     if (Mirror.active) {
       Mirror.render(ctx, t, touchUI);
+      drawOverlays(t, D);
+      return;
+    }
+    if (Minigame.active) {
+      Minigame.render(ctx, t, touchUI);
       drawOverlays(t, D);
       return;
     }

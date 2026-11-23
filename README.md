@@ -8,6 +8,7 @@ o menino cai no chão e as vozes começam. O jogo termina junto com a música.
 No banheiro dá para olhar no espelho. Às vezes (10%) tem alguma coisa atrás de você.
 Na suíte da minha mãe também (5%), e não é a mesma coisa. O celular fica em cima da cômoda do meu quarto.
 E às vezes (3%), ao entrar ou sair de um cômodo, ela aparece por um instante, longe.
+No computador do meu quarto há um easter egg (5%): um minigame de tiro tático, o CLUTCH.
 
 ## Como jogar
 
@@ -49,6 +50,7 @@ Quase tudo que é texto ou tempo fica em **`js/config.js`**:
 - `MIRROR_*` / `MIRROR2_*`: chance das criaturas nos espelhos, frases, tempo até pegar, tempo atordoado
 - `PHONE_*`: hora, notificação, música parada, notas e a lista de conversas do WhatsApp do celular
 - `APPARITION_CHANCE`: chance da criatura aparecer ao trocar de cômodo
+- `MINIGAME_*`: chance do minigame no computador, folga de segurança antes do drop e frases do fim
 
 Outros arquivos:
 
@@ -58,6 +60,7 @@ Outros arquivos:
 - `js/mirror.js`: os espelhos, as duas criaturas, a captura e o efeito de atordoado
 - `js/phone.js`: o celular (tela de bloqueio, apps, WhatsApp)
 - `js/apparition.js`: a criatura que aparece de relance ao trocar de cômodo
+- `js/minigame.js`: o minigame CLUTCH (easter egg do computador)
 - `js/audio.js`: bips, música, drone/coração do final
 - `js/main.js`: estados do jogo (intro → exploração → queda → fim)
 
@@ -68,6 +71,7 @@ Outros arquivos:
 - `?pos=6,14`: posição inicial do menino em tiles (ex.: na sala)
 - `?debug`: mostra o tempo da música e o cômodo atual
 - `?apparition`: a criatura aparece em toda troca de cômodo
+- `?minigame`: o computador sempre abre o minigame (ex.: `?skip&t=30&minigame`)
 - `?creature`: a criatura sempre aparece no espelho (ex.: `?skip&t=30&pos=14.3,14.4&creature`;
   na suíte da minha mãe: `?skip&t=30&pos=28.6,14.4&creature`, olhando para a direita)
 
