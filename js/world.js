@@ -12,11 +12,11 @@ window.World = (function () {
     '#...........#,,,,,,,#,,,,,,,#',
     '#...........#,,,,,,,#,,,,,,,#',
     '########DD###,,,,,,,#,,,,,,,#',
-    '#...........#,,,,,,,#,,,,,,,#',
-    '#...........#####D###,,,,,,,#',
-    '#...................#,,,,,,,#',
-    '#...................#,,,,,,,#',
-    '#...................D,,,,,,,#',
+    '#...#.......#,,,,,,,#,,,,,,,#',
+    '#...#.......#####D###,,,,,,,#',
+    '#...#...............#,,,,,,,#',
+    '#...#...............#,,,,,,,#',
+    '#...#...............D,,,,,,,#',
     '#...........###D##D##########',
     '#...........#....#......#...#',
     '#...........#....#......D...#',
@@ -150,13 +150,13 @@ window.World = (function () {
   add('bed', 13, 1, 2, 4, { blanket: '#7a5442', pillowAccent: '#b0303a', made: true, desc: 'uma cama arrumada. ninguém dorme aqui hoje.' });
   add('desk', 16, 1, 2, 1, { lamp: true, lampOff: true, notebook: true, desc: 'a luminária apagada. tudo no lugar.' });
   add('officeChair', 16.45, 2.05, 0.9, 0.9);
-  add('wardrobe', 19, 1, 1, 4, { vertical: true });
+  add('wardrobe', 19, 1, 1, 4, { front: 'left', color: '#d6cfc3' });
   add('shelfItems', 13, 7.15, 3, 0.85, { desc: 'livros e tênis guardados.' });
   add('window', 15, 0, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   // Suíte
   // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
   // cama à direita, cadeira e mesa com computador embaixo, porta no canto inferior esquerdo.
-  add('wardrobe', 21, 2, 1.5, 6.5, { vertical: true, desc: 'roupas amontoadas. faz dias que não arrumo nada.' });
+  add('wardrobe', 21, 2, 1.5, 6.5, { front: 'right', color: '#6e4d38', desc: 'roupas amontoadas. faz dias que não arrumo nada.' });
   add('dresser', 23, 2, 1.75, 0.9, { action: 'phone', phone: true }); // o celular fica em cima (ver js/phone.js)
   add('window', 23, 1, 2, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   add('bed', 25, 2, 3, 7, { blanket: '#3c4560', messy: true, desc: 'a cama desarrumada. não consigo dormir.' });
@@ -170,10 +170,11 @@ window.World = (function () {
   // Quarto da minha mãe (o de baixo, ao lado do banheiro): os guarda-roupas cercam a cama,
   // a janela fica atrás do guarda-roupa de baixo (atrás da cabeceira), TV na parede de cima.
   add('tvWall', 20, 13, 2, 0.375, { solid: false, decor: true, desc: 'a tv do quarto da minha mãe. desligada.' });
-  add('wardrobe', 18, 14.625, 1, 5.375, { vertical: true, desc: 'o guarda-roupa da minha mãe.' });
-  add('bed', 19.25, 15, 3, 3.5, { flipY: true, made: true, blanket: '#9a6a7a', desc: 'a cama da minha mãe, arrumada. o quarto está vazio.' });
-  add('wardrobe', 19, 18.5625, 3.25, 1.4375, { desc: 'atrás desse guarda-roupa tem uma janela. mal dá pra ver a noite.' });
-  add('wardrobe', 22.25, 16.375, 1.5, 3.625, { vertical: true, desc: 'mais roupas dela. tudo dobrado.' });
+  // (entre a cama e os guarda-roupas dos lados há um corredorzinho para chegar na cama)
+  add('wardrobe', 18, 14.625, 1, 5.375, { front: 'right', color: '#ddd5c8', desc: 'o guarda-roupa da minha mãe.' });
+  add('bed', 19.875, 15, 2.5, 3.5625, { flipY: true, made: true, blanket: '#9a6a7a', desc: 'a cama da minha mãe, arrumada. o quarto está vazio.' });
+  add('wardrobe', 19, 18.5625, 4.25, 1.4375, { front: 'up', color: '#ddd5c8', desc: 'atrás desse guarda-roupa tem uma janela. mal dá pra ver a noite.' });
+  add('wardrobe', 23.25, 16, 0.75, 4, { front: 'left', color: '#ddd5c8', desc: 'mais roupas dela. tudo dobrado.' });
   // Suíte da minha mãe
   add('showerFloor', 25, 18.1875, 3, 1.8125, { solid: false, decor: true, desc: 'não gosto de ficar no banheiro da minha mãe.' });
   add('sinkV', 27.25, 13.0625, 0.75, 2.75, { action: 'mirror', mirror: 'mae' });
@@ -256,6 +257,12 @@ window.World = (function () {
   function R(ctx, x, y, w, h, c) {
     ctx.fillStyle = c;
     ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
+  // clareia (k>0) ou escurece (k<0) uma cor #rrggbb
+  function shade(hex, k) {
+    const n = parseInt(hex.slice(1), 16);
+    const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.max(0, Math.min(255, Math.round(k > 0 ? v + (255 - v) * k : v * (1 + k)))));
+    return '#' + ch.map((v) => v.toString(16).padStart(2, '0')).join('');
   }
   function disc(ctx, cx, cy, r, c) {
     ctx.fillStyle = c;
@@ -718,20 +725,58 @@ window.World = (function () {
         disc(ctx, x + 7, y + 7, 4, '#3a3a46');
         R(ctx, x + 2, y + 1, 10, 3, '#22222a');
         break;
-      case 'wardrobe':
-        R(ctx, x, y, w, h, '#cdc6ba');
-        R(ctx, x, y, w, 1, '#e2dcd2');
-        R(ctx, x, y + h - 1, w, 1, '#9e978c');
-        if (f.vertical) {
-          R(ctx, x, y, 2, h, '#a8a195');
-          for (let j = 0; j < h; j += 4) R(ctx, x + 3, y + j, w - 4, 1, '#b5aea2');
-          for (let j = 14; j < h; j += 16) R(ctx, x, y + j, w, 1, '#9e978c');
-        } else {
-          R(ctx, x, y + h - 2, w, 2, '#a8a195');
-          for (let i = 0; i < w; i += 4) R(ctx, x + i, y + 2, 1, h - 5, '#b5aea2');
-          for (let i = 15; i < w; i += 16) R(ctx, x + i, y, 1, h, '#9e978c');
+      case 'wardrobe': {
+        // visto de cima: tampo com veio de madeira, portas, puxadores na frente e sombra no chão
+        const front = f.front || (f.vertical ? 'right' : 'down');
+        const base = f.color || '#d6cfc3';
+        const lum = parseInt(base.slice(1, 3), 16) + parseInt(base.slice(3, 5), 16) + parseInt(base.slice(5, 7), 16);
+        const isLight = lum > 450;
+        const dark = shade(base, isLight ? -0.22 : -0.3), mid = shade(base, isLight ? -0.06 : -0.12), light = shade(base, 0.12);
+        const handle = isLight ? '#8c8780' : '#c9c6c0';
+        const vert = front === 'left' || front === 'right';
+        // sombra no chão, do lado da frente
+        ctx.fillStyle = 'rgba(8,4,16,0.32)';
+        if (front === 'right') ctx.fillRect(x + w, y + 1, 2, h);
+        if (front === 'left') ctx.fillRect(x - 2, y + 1, 2, h);
+        if (front === 'down') ctx.fillRect(x + 1, y + h, w, 2);
+        if (front === 'up') ctx.fillRect(x + 1, y - 2, w, 2);
+        R(ctx, x, y, w, h, dark);
+        R(ctx, x + 1, y + 1, w - 2, h - 2, base);
+        // veio da madeira (ao longo do móvel)
+        const L = vert ? h : w, Dp = vert ? w : h;
+        for (let k = 0; k < 3; k++) {
+          const off = 2 + Math.round(((k + 1) * (Dp - 4)) / 4);
+          for (let i = 2; i < L - 2; i += 7 + k) {
+            const len = 3 + ((i * 7 + k * 5) % 5);
+            if (vert) R(ctx, x + off, y + i, 1, Math.min(len, L - 2 - i), mid);
+            else R(ctx, x + i, y + off, Math.min(len, L - 2 - i), 1, mid);
+          }
         }
+        // borda da frente (as portas) mais clara
+        if (front === 'right') R(ctx, x + w - 3, y + 1, 2, h - 2, light);
+        if (front === 'left') R(ctx, x + 1, y + 1, 2, h - 2, light);
+        if (front === 'down') R(ctx, x + 1, y + h - 3, w - 2, 2, light);
+        if (front === 'up') R(ctx, x + 1, y + 1, w - 2, 2, light);
+        // divisões das portas + puxadores
+        const doors = Math.max(2, Math.round(L / 15));
+        const step = L / doors;
+        for (let d = 1; d < doors; d++) {
+          const p = Math.round(d * step);
+          if (vert) R(ctx, x + 1, y + p, w - 2, 1, dark);
+          else R(ctx, x + p, y + 1, 1, h - 2, dark);
+          if (d % 2 === 1) {
+            // par de puxadores encontrando no meio das portas
+            const hc = handle;
+            if (front === 'right') { R(ctx, x + w - 4, y + p - 3, 1, 2, hc); R(ctx, x + w - 4, y + p + 2, 1, 2, hc); }
+            if (front === 'left') { R(ctx, x + 3, y + p - 3, 1, 2, hc); R(ctx, x + 3, y + p + 2, 1, 2, hc); }
+            if (front === 'down') { R(ctx, x + p - 3, y + h - 4, 2, 1, hc); R(ctx, x + p + 2, y + h - 4, 2, 1, hc); }
+            if (front === 'up') { R(ctx, x + p - 3, y + 3, 2, 1, hc); R(ctx, x + p + 2, y + 3, 2, 1, hc); }
+          }
+        }
+        // moldura do tampo
+        R(ctx, x + 1, y + 1, w - 2, 1, light);
         break;
+      }
       case 'shelfItems': {
         R(ctx, x, y, w, h, '#4e3a2c');
         R(ctx, x, y, w, 1, '#6a4f3c');

@@ -43,7 +43,9 @@ window.CONFIG = {
   MIRROR_GRAB_AFTER: 5,         // segundos olhando até ela "pegar"
   MIRROR_DAZE: 5,               // segundos atordoado depois
   MIRROR_SAFE_GAP: 14,          // sem criatura nos últimos N segundos antes do drop
+  // A primeira frase de cada lista aparece com mais frequência.
   MIRROR_CAPTIONS: [
+    'eu evito me olhar no espelho.',
     'eu pareço tão cansado.',
     'olheiras fundas.',
     'quem é esse?',
@@ -57,6 +59,13 @@ window.CONFIG = {
     'esse espelho é dela, não meu.',
     'aqui dentro eu me sinto vigiado.',
     'não gosto de ficar aqui.',
+    // as mesmas do outro banheiro
+    'eu evito me olhar no espelho.',
+    'eu pareço tão cansado.',
+    'olheiras fundas.',
+    'quem é esse?',
+    'não lembro quando dormi direito.',
+    'evito olhar nos meus próprios olhos.',
   ],
 
   // Onde o jogo começa: o meu quarto (o mais à direita), em frente ao computador.

@@ -48,7 +48,7 @@ window.Mirror = (function () {
     const sc = SCENES[sceneId] || SCENES.banheiro;
     const creature = canHaveCreature(t) && (force || Math.random() < sc.chance());
     const caps = sc.captions();
-    const caption = sc.variant === 'b' && Math.random() < 0.55 ? caps[0] : caps[(Math.random() * caps.length) | 0];
+    const caption = Math.random() < 0.35 ? caps[0] : caps[(Math.random() * caps.length) | 0];
     active = {
       t: 0,
       sc,
