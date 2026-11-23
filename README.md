@@ -65,7 +65,7 @@ Outros arquivos:
 - `?pos=6,14`: posição inicial do menino em tiles (ex.: na sala)
 - `?debug`: mostra o tempo da música e o cômodo atual
 - `?creature`: a criatura sempre aparece no espelho (ex.: `?skip&t=30&pos=14.3,14.4&creature`;
-  na suíte da minha mãe: `?skip&t=30&pos=26.6,14.4&creature`, olhando para a direita)
+  na suíte da minha mãe: `?skip&t=30&pos=28.6,14.4&creature`, olhando para a direita)
 
 Exemplo: `index.html?skip&t=148&pos=6,14&debug`. O `?t=` precisa de um servidor que aceite
 *range requests* (o GitHub Pages aceita; o `python3 -m http.server` não).

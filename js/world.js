@@ -5,27 +5,27 @@ window.World = (function () {
 
   // '#' parede   ' ' fora da casa   '.' piso frio   ',' piso de madeira   'D' porta
   const MAP = [
-    '            #########        ',
-    '            #,,,,,,,#########',
-    '#############,,,,,,,#,,,,,,,#',
-    '#...........#,,,,,,,#,,,,,,,#',
-    '#...........#,,,,,,,#,,,,,,,#',
-    '#...........#,,,,,,,#,,,,,,,#',
-    '########DD###,,,,,,,#,,,,,,,#',
-    '#...#.......#,,,,,,,#,,,,,,,#',
-    '#...#.......#####D###,,,,,,,#',
-    '#...#...............#,,,,,,,#',
-    '#...#...............#,,,,,,,#',
-    '#...#...............D,,,,,,,#',
-    '#...........###D##D##########',
-    '#...........#....#......#...#',
-    '#...........#....#......D...#',
-    '#...........#....#......#...#',
-    '#...........#....#......#...#',
-    '#...........#....#......#...#',
-    '###.........#....#......#...#',
-    '  #.........#....#......#...#',
-    '  ###########################',
+    '            #########          ',
+    '            #,,,,,,,#########  ',
+    '#############,,,,,,,#.......#  ',
+    '#...........#,,,,,,,#.......#  ',
+    '#...........#,,,,,,,#.......#  ',
+    '#...........#,,,,,,,#.......#  ',
+    '########DD###,,,,,,,#.......#  ',
+    '#...#.......#,,,,,,,#.......#  ',
+    '#...#.......#####D###.......#  ',
+    '#...#...............#.......#  ',
+    '#...#...............#.......#  ',
+    '#...#...............D.......#  ',
+    '#...........###D##D############',
+    '#...........#....#........#...#',
+    '#...........#....#........D...#',
+    '#...........#....#........#...#',
+    '#...........#....#........#...#',
+    '#...........#....#........#...#',
+    '###.........#....#........#...#',
+    '  #.........#....#........#...#',
+    '  #############################',
   ];
   const COLS = MAP[0].length;
   const ROWS = MAP.length;
@@ -40,7 +40,7 @@ window.World = (function () {
     meu_quarto: [24, 6],
     banheiro: [14, 15],
     quarto_mae: [20, 13],
-    banheiro_mae: [26, 15],
+    banheiro_mae: [28, 15],
   };
 
   // Janelas (tiles de parede)
@@ -49,7 +49,7 @@ window.World = (function () {
     [23, 1], [24, 1], // atrás da cômoda do meu quarto
     [4, 20], [5, 20],
     [14, 20],
-    [20, 20], [21, 20], // atrás do guarda-roupa, atrás da cama da minha mãe
+    [21, 20], [22, 20], // atrás do guarda-roupa, atrás da cama da minha mãe
   ];
   const winSet = new Set(WINDOWS.map(([x, y]) => x + ',' + y));
 
@@ -169,17 +169,17 @@ window.World = (function () {
   add('glass', 13, 17.45, 1.9, 0.2);
   // Quarto da minha mãe (o de baixo, ao lado do banheiro): os guarda-roupas cercam a cama,
   // a janela fica atrás do guarda-roupa de baixo (atrás da cabeceira), TV na parede de cima.
-  add('tvWall', 20, 13, 2, 0.375, { solid: false, decor: true, desc: 'a tv do quarto da minha mãe. desligada.' });
+  add('tvWall', 20.5, 13, 2, 0.375, { solid: false, decor: true, desc: 'a tv do quarto da minha mãe. desligada.' });
   // (entre a cama e os guarda-roupas dos lados há um corredorzinho para chegar na cama)
   add('wardrobe', 18, 14.625, 1, 5.375, { front: 'right', color: '#ddd5c8', desc: 'o guarda-roupa da minha mãe.' });
-  add('bed', 19.875, 15, 2.5, 3.5625, { flipY: true, made: true, blanket: '#9a6a7a', desc: 'a cama da minha mãe, arrumada. o quarto está vazio.' });
-  add('wardrobe', 19, 18.5625, 4.25, 1.4375, { front: 'up', color: '#ddd5c8', desc: 'atrás desse guarda-roupa tem uma janela. mal dá pra ver a noite.' });
-  add('wardrobe', 23.25, 16, 0.75, 4, { front: 'left', color: '#ddd5c8', desc: 'mais roupas dela. tudo dobrado.' });
+  add('bed', 20, 15, 3, 3.5625, { flipY: true, made: true, blanket: '#9a6a7a', desc: 'a cama da minha mãe, arrumada. o quarto está vazio.' });
+  add('wardrobe', 19, 18.5625, 5.25, 1.4375, { front: 'up', color: '#ddd5c8', desc: 'atrás desse guarda-roupa tem uma janela. mal dá pra ver a noite.' });
+  add('wardrobe', 24.25, 16, 1.75, 4, { front: 'left', color: '#ddd5c8', desc: 'mais roupas dela. tudo dobrado.' });
   // Suíte da minha mãe
-  add('showerFloor', 25, 18.1875, 3, 1.8125, { solid: false, decor: true, desc: 'não gosto de ficar no banheiro da minha mãe.' });
-  add('sinkV', 27.25, 13.0625, 0.75, 2.75, { action: 'mirror', mirror: 'mae' });
-  add('toilet', 27.125, 16.5625, 0.875, 1, { flipX: true, desc: 'tudo aqui é tão arrumado. tão dela.' });
-  add('glass', 25.875, 18.0625, 2.125, 0.1875);
+  add('showerFloor', 27, 18.1875, 3, 1.8125, { solid: false, decor: true, desc: 'não gosto de ficar no banheiro da minha mãe.' });
+  add('sinkV', 29.25, 13.0625, 0.75, 2.75, { action: 'mirror', mirror: 'mae' });
+  add('toilet', 29.125, 16.5625, 0.875, 1, { flipX: true, desc: 'tudo aqui é tão arrumado. tão dela.' });
+  add('glass', 27.875, 18.0625, 2.125, 0.1875);
 
   // ---------- luzes (em pixels do mundo) ----------
   const MOON = [0.42, 0.52, 0.95];
@@ -202,8 +202,8 @@ window.World = (function () {
       { x: 25.4 * T, y: 11.0 * T, r: 66, c: [0.5, 0.72, 1.0], i: 0.62, kind: 'screen' },
     ],
     banheiro: [{ x: 14.5 * T, y: 19.5 * T, r: 48, c: MOON, i: 0.4 }],
-    quarto_mae: [{ x: 20.8 * T, y: 18.4 * T, r: 60, c: MOON, i: 0.34 }],
-    banheiro_mae: [{ x: 26 * T, y: 14.6 * T, r: 44, c: [0.62, 0.66, 0.9], i: 0.26 }],
+    quarto_mae: [{ x: 21.5 * T, y: 18.4 * T, r: 64, c: MOON, i: 0.34 }],
+    banheiro_mae: [{ x: 28 * T, y: 14.6 * T, r: 44, c: [0.62, 0.66, 0.9], i: 0.26 }],
   };
 
   // ---------- colisão ----------
