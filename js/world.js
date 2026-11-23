@@ -144,9 +144,9 @@ window.World = (function () {
   add('rug', 15.5, 4.6, 3.4, 3.8, { solid: false, decor: true });
   add('sofa', 13, 4, 2, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
   add('coffee', 16.3, 5.5, 1.6, 1.8);
-  add('tvPanel', 19.25, 4, 0.75, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
+  add('tvPanel', 19, 4, 1, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
+  add('plant', 12.05, 7.5, 0.9, 0.95, { desc: 'a planta atrás do sofá. algumas folhas secando.' }); // no vão atrás do sofá
   add('lamp', 15.15, 4.05, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
-  add('pot', 18.3, 4.08, 0.85, 0.85);
   add('window', 15, 3, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   // Suíte
   // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
@@ -273,7 +273,6 @@ window.World = (function () {
     if (ch === ',') return 'wood';
     if (room === 'banheiro') return 'bath';
     if (room === 'banheiro_mae') return 'bath2';
-    if (room === 'varanda') return 'balcony';
     return 'ceramic';
   }
 
@@ -539,17 +538,40 @@ window.World = (function () {
         break;
       }
       case 'tvPanel': {
-        // painel de madeira na parede inteira + TV no meio + prateleira suspensa
-        R(ctx, x - 1, y + 1, 1, h - 2, 'rgba(8,4,16,0.35)');
-        R(ctx, x, y, w, h, '#5a4030');
-        for (let j = 3; j < h; j += 6) R(ctx, x + 1, y + j, w - 2, 1, '#4a3426');
-        R(ctx, x, y, 1, h, '#74533e');
-        const ty = y + Math.round(h * 0.22), th = Math.round(h * 0.56);
-        R(ctx, x - 3, ty, 3, th, '#0c0c10'); // TV
-        R(ctx, x - 3, ty, 1, th, '#2c2c36');
-        R(ctx, x - 5, y + 6, 5, Math.round(h * 0.12), '#6a4c38'); // prateleirinha
-        R(ctx, x - 5, y + h - 6 - Math.round(h * 0.12), 5, Math.round(h * 0.12), '#6a4c38');
-        R(ctx, x - 4, y + 8, 2, 2, '#3f6b3a'); // plantinha
+        // painel/rack de madeira ao longo da parede inteira, com a TV em cima dele
+        R(ctx, x - 2, y + 1, 2, h - 1, 'rgba(8,4,16,0.32)'); // sombra no chão
+        R(ctx, x, y, w, h, '#4e3828');
+        R(ctx, x + 1, y + 1, w - 2, h - 2, '#5e4331');
+        for (let i = 3; i < w - 2; i += 4) R(ctx, x + i, y + 2, 1, h - 4, '#553b2b'); // veio
+        R(ctx, x, y, 2, h, '#7a5842'); // frente do rack
+        for (let k = 1; k < 3; k++) R(ctx, x, y + Math.round((h * k) / 3), 2, 1, '#3e2c20'); // portas
+        R(ctx, x, y, w, 1, '#7a5842');
+        // TV em pé sobre o rack (vista de cima): base + tela fininha perto da parede
+        const ty = y + Math.round(h * 0.2), th = Math.round(h * 0.6);
+        R(ctx, x + w - 9, ty + th / 2 - 4, 4, 8, '#26262c'); // base/pé
+        R(ctx, x + w - 6, ty, 3, th, '#0c0c10'); // TV
+        R(ctx, x + w - 6, ty, 1, th, '#33333e');
+        R(ctx, x + w - 6, ty + th - 2, 1, 1, '#c02020'); // ledzinho de standby
+        // enfeites em cima do rack
+        disc(ctx, x + 7, y + 5, 3, '#3f6b3a');
+        R(ctx, x + 6, y + 3, 2, 2, '#5f9a4e');
+        R(ctx, x + 4, y + h - 9, 7, 5, '#2c2c34'); // caixinha de som
+        R(ctx, x + 5, y + h - 8, 2, 2, '#4a4a56');
+        break;
+      }
+      case 'plant': {
+        // planta grande num vaso, vista de cima (folhas passando da borda do vaso)
+        const cx = x + w / 2, cy = y + h / 2;
+        disc(ctx, cx + 1, cy + 3, 6, sh);
+        disc(ctx, cx, cy + 1, 5, '#7a4a30');
+        disc(ctx, cx, cy + 1, 4, '#5a3622');
+        const leaves = [[-6, -3], [5, -4], [-4, 4], [6, 3], [0, -7], [-7, 1], [3, 6], [1, -1]];
+        leaves.forEach(([ox, oy], i) => {
+          R(ctx, cx + ox - 2, cy + oy - 1, 5, 3, i % 3 ? '#3f6b3a' : '#4f8a44');
+          R(ctx, cx + ox - 1, cy + oy - 2, 3, 1, '#5f9a4e');
+        });
+        R(ctx, cx - 1, cy - 1, 2, 2, '#6fae5a');
+        R(ctx, cx + 4, cy + 5, 2, 1, '#9a8a3a'); // folha secando
         break;
       }
       case 'tvrack':
