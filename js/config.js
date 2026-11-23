@@ -92,6 +92,8 @@ window.CONFIG = {
     'não me sinto confortável falando com você sobre esses problemas mentais.',
     'e eu não gostaria que você se preocupasse comigo por causa disso.',
     'esse episódio aconteceu numa noite em que você estava na faculdade, e eu acabei sumindo por algumas horas.',
+    'eu falei para você que eu não respondi porque meu celular estava com pouca bateria, o que não é mentira.',
+    'mas aconteceram mais coisas que me impediram de te responder.',
   ],
 
   // ---------------------------------------------------------------

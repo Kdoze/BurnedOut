@@ -404,15 +404,10 @@ window.Phone = (function () {
     R(ctx, SX, SY, SW, SH, '#121214');
     statusBar(ctx, songT);
     header(ctx, 'Música', '#121214', '#e8e4f0');
-    // capa em preto e branco (abstrata)
+    // capa: o logo da banda (casa em cima de um triângulo invertido), branco no preto
     const cx = SX + 18, cy = SY + 26, cs = SW - 36;
-    for (let y = 0; y < cs; y++) {
-      const v = Math.round(18 + (y / cs) * 70);
-      R(ctx, cx, cy + y, cs, 1, `rgb(${v},${v},${v})`);
-    }
-    for (let i = 0; i < 40; i++) R(ctx, cx + ((i * 37) % cs), cy + ((i * 53) % cs), 1, 1, i % 2 ? '#bdbdbd' : '#6a6a6a');
-    disc(ctx, cx + cs / 2, cy + cs / 2 + 6, 10, '#0a0a0a');
-    R(ctx, cx + cs / 2 - 14, cy + cs - 10, 28, 10, '#0a0a0a');
+    R(ctx, cx, cy, cs, cs, '#050505');
+    bandLogo(ctx, cx, cy, cs, '#f4f4f4');
     const ty = cy + cs + 5;
     txt(ctx, Font.fitSmall(song.title, SW - 16), SX + 8, ty, '#f0ecf8');
     txt(ctx, Font.fitSmall(song.artist, SW - 16), SX + 8, ty + 8, '#9a9aa6');
@@ -441,6 +436,42 @@ window.Phone = (function () {
     // curtir
     heart(ctx, bxs[3], by + 1, state.liked ? '#e84a6a' : '#6a627a');
     txt(ctx, 'pausado', SX + (SW - tw('pausado')) / 2, by + 14, '#5e5e68');
+  }
+
+  // logo da banda em pixel art (proporções tiradas da referência 640x640)
+  function bandLogo(ctx, x0, y0, s, c) {
+    const t = Math.max(2, Math.round(s * 0.035));
+    const X = (u) => Math.round(x0 + u * s), Y = (v) => Math.round(y0 + v * s);
+    const box = (u0, v0, u1, v1) => {
+      R(ctx, X(u0), Y(v0), X(u1) - X(u0), t, c);
+      R(ctx, X(u0), Y(v1) - t, X(u1) - X(u0), t, c);
+      R(ctx, X(u0), Y(v0), t, Y(v1) - Y(v0), c);
+      R(ctx, X(u1) - t, Y(v0), t, Y(v1) - Y(v0), c);
+    };
+    const line = (u0, v0, u1, v1) => {
+      const n = Math.ceil(Math.hypot(X(u1) - X(u0), Y(v1) - Y(v0)) * 2);
+      for (let i = 0; i <= n; i++) {
+        const k = i / n;
+        R(ctx, X(u0 + (u1 - u0) * k) - t / 2, Y(v0 + (v1 - v0) * k) - t / 2, t, t, c);
+      }
+    };
+    // casa
+    R(ctx, X(0.22), Y(0.13), X(0.78) - X(0.22), t, c);
+    R(ctx, X(0.22), Y(0.13), t, Y(0.49) - Y(0.13), c);
+    R(ctx, X(0.78) - t, Y(0.13), t, Y(0.49) - Y(0.13), c);
+    box(0.30, 0.13, 0.48, 0.45); // porta alta
+    box(0.55, 0.27, 0.71, 0.43); // janela
+    R(ctx, X(0.63) - t / 2, Y(0.27), t, Y(0.43) - Y(0.27), c);
+    R(ctx, X(0.55), Y(0.35) - t / 2, X(0.71) - X(0.55), t, c);
+    // triângulo invertido
+    R(ctx, X(0.13), Y(0.48), X(0.87) - X(0.13), t, c);
+    line(0.14, 0.49, 0.5, 0.86);
+    line(0.86, 0.49, 0.5, 0.86);
+    // portinha saindo pela lateral do triângulo (a linha do triângulo não passa por dentro dela)
+    R(ctx, X(0.59) + t, Y(0.63) + t, X(0.73) - X(0.59) - 2 * t, Y(0.83) - Y(0.63) - 2 * t, '#050505');
+    R(ctx, X(0.59), Y(0.62), t, Y(0.83) - Y(0.62), c);
+    R(ctx, X(0.73) - t, Y(0.60), t, Y(0.83) - Y(0.60), c);
+    R(ctx, X(0.59), Y(0.83) - t, X(0.73) - X(0.59), t, c);
   }
 
   function drawPhotos(ctx, songT) {

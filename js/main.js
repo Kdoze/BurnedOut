@@ -387,7 +387,7 @@
     for (const L of list) {
       let i = L.i;
       if (L.kind === 'lamp') {
-        const offAt = room === 'quarto' ? 0.34 : 0.46;
+        const offAt = 0.46;
         if (D > offAt) i = 0;
         else if (D > offAt - 0.12) i *= Math.random() < 0.25 + (D - offAt + 0.12) * 4 ? 0.1 : 1;
         else if (t > C.TREMBLE_AT) i *= 0.92 + Math.random() * 0.08;

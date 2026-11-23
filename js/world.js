@@ -6,14 +6,14 @@ window.World = (function () {
   // '#' parede   ' ' fora da casa   '.' piso frio   ',' piso de madeira   'D' porta
   const MAP = [
     '            #########          ',
-    '            #,,,,,,,#########  ',
-    '#############,,,,,,,#.......#  ',
-    '#...........#,,,,,,,#.......#  ',
-    '#...........#,,,,,,,#.......#  ',
-    '#...........#,,,,,,,#.......#  ',
-    '########DD###,,,,,,,#.......#  ',
-    '#...#.......#,,,,,,,#.......#  ',
-    '#...#.......#####D###.......#  ',
+    '            #.......#########  ',
+    '#############.......#.......#  ',
+    '#...........#.......#.......#  ',
+    '#...........#.......#.......#  ',
+    '#...........#.......#.......#  ',
+    '########DD###.......#.......#  ',
+    '#...#...............#.......#  ',
+    '#...#...............#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............D.......#  ',
@@ -36,7 +36,6 @@ window.World = (function () {
   const ROOM_SEEDS = {
     sala: [5, 10],
     varanda: [5, 4],
-    quarto: [16, 4],
     meu_quarto: [24, 6],
     banheiro: [14, 15],
     quarto_mae: [20, 13],
@@ -121,8 +120,7 @@ window.World = (function () {
   add('planter', 4.4, 5.15, 2.2, 0.85, { desc: 'as plantas precisam de água.' });
   add('balconyTable', 8.7, 3.15, 2.3, 1.75, { desc: 'duas cadeiras vazias.' });
   add('pot', 11.1, 3.1, 0.85, 0.85);
-  // Sala / cozinha / jantar
-  add('rug', 7, 7.4, 4, 5.2, { solid: false, decor: true });
+  // Cozinha / jantar (lado esquerdo)
   add('washer', 1, 7, 1, 1, { desc: 'a máquina de lavar, parada.' });
   add('counter', 1, 8, 1, 1);
   add('microwave', 1, 9, 1, 1, { desc: 'o relógio do micro-ondas pisca 00:00.' });
@@ -133,25 +131,22 @@ window.World = (function () {
   add('counter', 1, 14, 1, 1);
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
   add('counter', 1, 17, 1, 1);
-  add('sofa', 5, 7, 2, 4, { desc: 'ninguém sentado aqui hoje.' });
-  add('coffee', 8.2, 8.9, 1.6, 1.8);
-  add('tvrack', 11, 7, 1, 3, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
-  add('lamp', 6.1, 11.9, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
-  add('chairDown', 9.1, 14, 0.8, 0.9);
-  add('chairDown', 10.1, 14, 0.8, 0.9);
-  add('chairRight', 8, 15.4, 0.9, 0.8);
-  add('chairRight', 8, 17.0, 0.9, 0.8);
-  add('dining', 9, 15, 2, 4, { desc: 'oito lugares. nenhum ocupado.' });
-  add('benchV', 11, 15, 1, 5);
-  add('benchH', 9, 19, 2, 1);
+  // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
+  add('chairDown', 9.85, 14.85, 0.8, 0.9);
+  add('chairDown', 10.95, 14.85, 0.8, 0.9);
+  add('dining4', 9.5, 15.75, 2.5, 1.5, { desc: 'quatro lugares. nenhum ocupado.' });
+  add('chairUp', 9.85, 17.25, 0.8, 0.9);
+  add('chairUp', 10.95, 17.25, 0.8, 0.9);
   add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
-  // Quarto (do menino)
-  add('carpet', 15.2, 2.5, 3.6, 4, { solid: false, decor: true });
-  add('bed', 13, 1, 2, 4, { blanket: '#7a5442', pillowAccent: '#b0303a', made: true, desc: 'uma cama arrumada. ninguém dorme aqui hoje.' });
-  add('desk', 16, 1, 2, 1, { lamp: true, lampOff: true, notebook: true, desc: 'a luminária apagada. tudo no lugar.' });
-  add('officeChair', 16.45, 2.05, 0.9, 0.9);
-  add('wardrobe', 19, 1, 1, 4, { front: 'left', color: '#d6cfc3' });
-  add('shelfItems', 13, 7.15, 3, 0.85, { desc: 'livros e tênis guardados.' });
+  // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
+  // e a TV fica na parede que faz fronteira com o meu quarto.
+  add('rug', 14.5, 6.5, 4, 4, { solid: false, decor: true });
+  add('sofa', 12, 7, 2, 3.25, { desc: 'ninguém sentado aqui hoje.' });
+  add('coffee', 15.6, 7.6, 1.6, 1.8);
+  add('tvrack', 19, 7, 1, 3, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
+  add('lamp', 13.1, 6.1, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
+  add('shelfItems', 13, 1, 2.5, 0.85, { desc: 'livros que ninguém abre faz tempo.' });
+  add('pot', 19.05, 1.1, 0.85, 0.85);
   add('window', 15, 0, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   // Suíte
   // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
@@ -185,9 +180,9 @@ window.World = (function () {
   const MOON = [0.42, 0.52, 0.95];
   const WARM = [1.0, 0.72, 0.42];
   const LIGHTS = {
-    quarto: [{ x: 16.5 * T, y: 1.6 * T, r: 60, c: MOON, i: 0.4 }],
     sala: [
-      { x: 6.5 * T, y: 12.3 * T, r: 78, c: WARM, i: 0.75, kind: 'lamp' },
+      { x: 13.5 * T, y: 6.5 * T, r: 80, c: WARM, i: 0.75, kind: 'lamp' },
+      { x: 16.5 * T, y: 1.6 * T, r: 60, c: MOON, i: 0.4 },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
       { x: 1.6 * T, y: 9.5 * T, r: 10, c: [0.4, 1.0, 0.6], i: 0.5, kind: 'tiny' },
@@ -565,6 +560,27 @@ window.World = (function () {
         R(ctx, x, y, w, 4, '#24406e');
         R(ctx, x + 1, y + 5, w - 2, h - 6, '#4566a6');
         break;
+      case 'chairUp':
+        R(ctx, x + 1, y + 1, w, h, sh);
+        R(ctx, x, y, w, h, '#33528c');
+        R(ctx, x, y + h - 4, w, 4, '#24406e');
+        R(ctx, x + 1, y + 1, w - 2, h - 6, '#4566a6');
+        break;
+      case 'dining4': {
+        // mesa retangular na horizontal, 4 lugares
+        R(ctx, x + 2, y + 2, w, h, sh);
+        R(ctx, x, y, w, h, '#8d5e37');
+        R(ctx, x, y, w, 1, '#a8774c');
+        for (let i = 7; i < w; i += 8) R(ctx, x + i, y, 1, h, '#7a4f2d');
+        R(ctx, x, y + h - 1, w, 1, '#6e4527');
+        for (const [px, py] of [[7, 4], [w - 13, 4], [7, h - 5], [w - 13, h - 5]]) {
+          disc(ctx, x + px, y + py, 3, '#e8e6e2');
+          R(ctx, x + px - 1, y + py - 1, 2, 2, '#c8c6c2');
+        }
+        disc(ctx, x + w / 2 + 6, y + h / 2, 4, '#3f6b3a');
+        for (const [ox, oy] of [[-2, -2], [2, -2], [0, 1], [3, 2], [-2, 2]]) R(ctx, x + w / 2 + 6 + ox, y + h / 2 + oy, 2, 2, '#eee8da');
+        break;
+      }
       case 'chairRight':
         R(ctx, x + 1, y + 1, w, h, sh);
         R(ctx, x, y, w, h, '#33528c');
