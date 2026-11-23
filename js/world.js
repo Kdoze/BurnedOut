@@ -5,10 +5,10 @@ window.World = (function () {
 
   // '#' parede   ' ' fora da casa   '.' piso frio   ',' piso de madeira   'D' porta
   const MAP = [
-    '            #########          ',
-    '            #.......#########  ',
-    '#############.......#.......#  ',
-    '#...........#.......#.......#  ',
+    '                               ',
+    '                    #########  ',
+    '#############       #.......#  ',
+    '#...........#########.......#  ',
     '#...........#.......#.......#  ',
     '#...........#.......#.......#  ',
     '########DD###.......#.......#  ',
@@ -44,7 +44,7 @@ window.World = (function () {
 
   // Janelas (tiles de parede)
   const WINDOWS = [
-    [15, 0], [16, 0], [17, 0],
+    [15, 3], [16, 3], [17, 3], // janela da sala de estar
     [23, 1], [24, 1], // atrás da cômoda do meu quarto
     [4, 20], [5, 20],
     [14, 20],
@@ -132,22 +132,22 @@ window.World = (function () {
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
   add('counter', 1, 17, 1, 1);
   // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
-  add('chairDown', 9.85, 14.85, 0.8, 0.9);
-  add('chairDown', 10.95, 14.85, 0.8, 0.9);
-  add('dining4', 9.5, 15.75, 2.5, 1.5, { desc: 'quatro lugares. nenhum ocupado.' });
-  add('chairUp', 9.85, 17.25, 0.8, 0.9);
-  add('chairUp', 10.95, 17.25, 0.8, 0.9);
+  add('chairDown', 8.9, 14.85, 0.8, 0.9);
+  add('chairDown', 10.6, 14.85, 0.8, 0.9);
+  add('dining4', 8.25, 15.75, 3.75, 1.5, { desc: 'quatro lugares. nenhum ocupado.' });
+  add('chairUp', 8.9, 17.25, 0.8, 0.9);
+  add('chairUp', 10.6, 17.25, 0.8, 0.9);
   add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
   // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
   // e a TV fica na parede que faz fronteira com o meu quarto.
-  add('rug', 14.5, 6.5, 4, 4, { solid: false, decor: true });
-  add('sofa', 12, 7, 2, 3.25, { desc: 'ninguém sentado aqui hoje.' });
-  add('coffee', 15.6, 7.6, 1.6, 1.8);
-  add('tvrack', 19, 7, 1, 3, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
-  add('lamp', 13.1, 6.1, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
-  add('shelfItems', 13, 1, 2.5, 0.85, { desc: 'livros que ninguém abre faz tempo.' });
-  add('pot', 19.05, 1.1, 0.85, 0.85);
-  add('window', 15, 0, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
+  // sofá de 3 lugares ocupando todo o lado esquerdo; painel da TV ocupando toda a parede do meu quarto
+  add('rug', 15.5, 4.6, 3.4, 3.8, { solid: false, decor: true });
+  add('sofa', 13, 4, 2, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
+  add('coffee', 16.3, 5.5, 1.6, 1.8);
+  add('tvPanel', 19.25, 4, 0.75, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
+  add('lamp', 15.15, 4.05, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
+  add('pot', 18.3, 4.08, 0.85, 0.85);
+  add('window', 15, 3, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   // Suíte
   // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
   // cama à direita, cadeira e mesa com computador embaixo, porta no canto inferior esquerdo.
@@ -181,8 +181,8 @@ window.World = (function () {
   const WARM = [1.0, 0.72, 0.42];
   const LIGHTS = {
     sala: [
-      { x: 13.5 * T, y: 6.5 * T, r: 80, c: WARM, i: 0.75, kind: 'lamp' },
-      { x: 16.5 * T, y: 1.6 * T, r: 60, c: MOON, i: 0.4 },
+      { x: 15.6 * T, y: 4.6 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
+      { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
       { x: 1.6 * T, y: 9.5 * T, r: 10, c: [0.4, 1.0, 0.6], i: 0.5, kind: 'tiny' },
@@ -518,7 +518,7 @@ window.World = (function () {
         R(ctx, x, y, w, 4, '#aaa397'); // braço
         R(ctx, x, y + h - 4, w, 4, '#aaa397');
         R(ctx, x + 7, y + 4, w - 8, h - 8, '#d9d3c8'); // assento
-        R(ctx, x + 7, y + 4 + (h - 8) / 2, w - 8, 1, '#bdb6aa');
+        for (let k = 1; k < (f.seats || 2); k++) R(ctx, x + 7, y + 4 + Math.round(((h - 8) * k) / (f.seats || 2)), w - 8, 1, '#bdb6aa');
         R(ctx, x + 6, y + 6, 6, 8, '#6e4f3c'); // almofadas
         R(ctx, x + 7, y + 7, 4, 2, '#8a6650');
         R(ctx, x + 6, y + h - 15, 6, 8, '#6e4f3c');
@@ -536,6 +536,20 @@ window.World = (function () {
         R(ctx, cx - 2, cy - 2, 3, 3, '#4f7a46');
         R(ctx, cx - 1, cy - 3, 1, 1, '#6fa45a');
         R(ctx, cx + 7, cy + 9, 3, 2, '#d8d0c0');
+        break;
+      }
+      case 'tvPanel': {
+        // painel de madeira na parede inteira + TV no meio + prateleira suspensa
+        R(ctx, x - 1, y + 1, 1, h - 2, 'rgba(8,4,16,0.35)');
+        R(ctx, x, y, w, h, '#5a4030');
+        for (let j = 3; j < h; j += 6) R(ctx, x + 1, y + j, w - 2, 1, '#4a3426');
+        R(ctx, x, y, 1, h, '#74533e');
+        const ty = y + Math.round(h * 0.22), th = Math.round(h * 0.56);
+        R(ctx, x - 3, ty, 3, th, '#0c0c10'); // TV
+        R(ctx, x - 3, ty, 1, th, '#2c2c36');
+        R(ctx, x - 5, y + 6, 5, Math.round(h * 0.12), '#6a4c38'); // prateleirinha
+        R(ctx, x - 5, y + h - 6 - Math.round(h * 0.12), 5, Math.round(h * 0.12), '#6a4c38');
+        R(ctx, x - 4, y + 8, 2, 2, '#3f6b3a'); // plantinha
         break;
       }
       case 'tvrack':
