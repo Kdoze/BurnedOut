@@ -98,6 +98,8 @@
   let flash = 0;
   let pulse = 0;
   let nextBeat = 0;
+  let throb = 0; // pulso visual de cada batida do coração
+  let skipped = false;
   let fallDone = false;
   let trembleStarted = false;
   let despairStarted = false;
@@ -266,7 +268,11 @@
     for (const dist of [8, 14, 20, 26]) {
       const f = World.furnitureAt(player.x + vx * dist, player.y - 4 + vy * dist);
       if (f && f.action === 'mirror') {
-        Mirror.open(t, DEBUG.creature);
+        Mirror.open(t, f.mirror, DEBUG.creature);
+        return;
+      }
+      if (f && f.action === 'phone') {
+        Phone.open();
         return;
       }
       if (f && f.desc) {
@@ -278,8 +284,12 @@
 
   function updateExplore(dt, t) {
     if (trans) return;
+    if (Phone.active) {
+      Phone.update(dt, Input.consumeAction(), Input.consumeBack());
+      return;
+    }
     if (Mirror.active) {
-      const r = Mirror.update(dt, Input.consumeAction());
+      const r = Mirror.update(dt, Input.consumeAction() || Input.consumeBack());
       if (r === 'grabbed') {
         shake = 5;
         Input.releaseAll();
@@ -287,6 +297,13 @@
       return;
     }
     const dz = Mirror.dazeK();
+    Input.consumeBack(); // "voltar" não faz nada andando pela casa
+    if (Mirror.recovering) {
+      // acabou de ser pego: fica de joelhos um instante
+      Input.consumeAction();
+      player.moving = false;
+      return;
+    }
     if (dialog) {
       dialog.t += dt;
       if (!dialog.done) typeStep(dialog, dialog.text, dt, 440);
@@ -390,6 +407,7 @@
       trembleStarted = true;
       dialog = null;
       Mirror.reset(); // nunca mistura o espelho com a crise
+      Phone.close();
       if (trans) {
         if (trans.next) room = trans.next;
         trans = null;
@@ -398,6 +416,7 @@
       player.frame = 0;
       shake = 3;
       flash = 0.5;
+      nextBeat = t + 0.2; // o coração dispara já no drop
       controls.classList.add('fade');
       Input.releaseAll();
     }
@@ -410,17 +429,26 @@
         despairStarted = true;
         Sound.startDespair();
       }
-      nextBeat = t + 0.9;
       Effects.reset();
+    }
+    // coração: acelera com a crise (~100 -> ~160 bpm) e fica irregular (palpitação)
+    if (trembleStarted && t >= nextBeat) {
+      const D = despair(t);
+      let interval = 0.6 - 0.22 * D;
+      const gap = Math.max(0.11, 0.17 - D * 0.05);
+      const r = Math.random();
+      const strong = skipped;
+      skipped = false;
+      if (D > 0.12 && r < 0.1 + D * 0.14) interval *= 0.45; // batida antecipada
+      else if (D > 0.25 && r > 0.93 - D * 0.06) { interval *= 1.9; skipped = true; } // falha... e volta forte
+      Sound.heartbeat((0.42 + D * 0.5) * (strong ? 1.35 : 1), gap);
+      pulse = Math.max(pulse, 0.14 + D * 0.26 + (strong ? 0.15 : 0));
+      throb = strong ? 1.6 : 1;
+      nextBeat = t + interval;
     }
     if (fallDone) {
       const D = despair(t);
       Sound.setDespair(D);
-      if (t >= nextBeat) {
-        Sound.heartbeat(0.28 + D * 0.42);
-        pulse = 0.12 + D * 0.18;
-        nextBeat = t + (1.15 - D * 0.6);
-      }
       const ps = screenPos();
       Effects.updateWords(dt, D, ps);
     }
@@ -502,6 +530,7 @@
       shake = Math.max(0, shake - dt * 9);
       flash = Math.max(0, flash - dt * 1.2);
       pulse = Math.max(0, pulse - dt * 0.5);
+      throb = Math.max(0, throb - dt * 7);
     }
   }
 
@@ -536,7 +565,7 @@
       // respiração e soluços
       if (Math.sin(t * 3.6) > 0.55) jy = -1;
       if (Math.random() < 0.03 + D * 0.12) jx = Math.random() < 0.5 ? -1 : 1;
-    } else if (t >= C.FALL_AT - 0.55 && t >= C.TREMBLE_AT) {
+    } else if ((t >= C.FALL_AT - 0.55 && t >= C.TREMBLE_AT) || Mirror.recovering) {
       img = Sprites.kneel;
       ox = player.x - 8;
       oy = player.y - 23;
@@ -591,6 +620,7 @@
     // entrada do jogo: fade lento em dithering
     let fade = fadeTrans;
     if (stateT < 3.2) fade = Math.max(fade, 1 - stateT / 3.2);
+    fade = Math.max(fade, Mirror.returnFade);
     const target = screenPos();
     Effects.drawTentacles(D, t, target);
     Effects.post(ctx, {
@@ -605,8 +635,11 @@
       glitch: D > 0.45 ? (D - 0.45) * 0.5 : 0,
       vcx: W / 2 + (target.x - W / 2) * Math.min(1, D * 1.5),
       vcy: H / 2 + (target.y - H / 2) * Math.min(1, D * 1.5),
-      tint: D > 0.5 ? [1 + (D - 0.5) * 0.25, 1 - (D - 0.5) * 0.3, 1 - (D - 0.5) * 0.2]
-        : dz > 0 ? [1 + dz * 0.3, 1 - dz * 0.25, 1 - dz * 0.2] : null,
+      tint: [
+        1 + Math.max(0, D - 0.5) * 0.25 + dz * 0.3 + throb * 0.08,
+        1 - Math.max(0, D - 0.5) * 0.3 - dz * 0.25 - throb * 0.06,
+        1 - Math.max(0, D - 0.5) * 0.2 - dz * 0.2 - throb * 0.06,
+      ],
     });
     // visão dupla quando atordoado
     if (dz > 0.02) {
@@ -619,6 +652,7 @@
     World.drawEmissive(ctx, room, cam, t, (1 - fade) * Math.max(0, 1 - D * 1.6));
     if (t >= C.FALL_AT) Effects.drawWords(ctx, D, t, target);
     drawDialog();
+    if (Phone.active) Phone.render(ctx, t, touchUI);
     drawOverlays(t, D);
   }
 
@@ -686,7 +720,12 @@
 
   function blit() {
     sctx.imageSmoothingEnabled = false;
-    sctx.drawImage(buf, 0, 0, screen.width, screen.height);
+    // a cada batida do coração a tela "pulsa" um pouquinho
+    const z = state === 'play' && throb > 0 ? 1 + throb * (0.008 + despair(lastT) * 0.018) : 1;
+    if (z > 1.0005) {
+      const w = screen.width * z, h = screen.height * z;
+      sctx.drawImage(buf, (screen.width - w) / 2, (screen.height - h) / 2, w, h);
+    } else sctx.drawImage(buf, 0, 0, screen.width, screen.height);
   }
 
   // =====================================================================

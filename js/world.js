@@ -18,13 +18,13 @@ window.World = (function () {
     '#...................#,,,,,,,#',
     '#...................D,,,,,,,#',
     '#...........###D##D##########',
-    '#...........#....#,,,,,,,,,,#',
-    '#...........#....#,,,,,,,,,,#',
-    '#...........#....#,,,,,,,,,,#',
-    '#...........#....#,,,,,,,,,,#',
-    '#...........#....#,,,,,,,,,,#',
-    '###.........#....#,,,,,,,,,,#',
-    '  #.........#....#,,,,,,,,,,#',
+    '#...........#....#......#...#',
+    '#...........#....#......D...#',
+    '#...........#....#......#...#',
+    '#...........#....#......#...#',
+    '#...........#....#......#...#',
+    '###.........#....#......#...#',
+    '  #.........#....#......#...#',
     '  ###########################',
   ];
   const COLS = MAP[0].length;
@@ -39,7 +39,8 @@ window.World = (function () {
     quarto: [16, 4],
     meu_quarto: [24, 6],
     banheiro: [14, 15],
-    quarto2: [22, 16],
+    quarto_mae: [20, 13],
+    banheiro_mae: [26, 15],
   };
 
   // Janelas (tiles de parede)
@@ -48,7 +49,7 @@ window.World = (function () {
     [23, 1], [24, 1], // atrás da cômoda do meu quarto
     [4, 20], [5, 20],
     [14, 20],
-    [23, 20], [24, 20], [25, 20],
+    [20, 20], [21, 20], // atrás do guarda-roupa, atrás da cama da minha mãe
   ];
   const winSet = new Set(WINDOWS.map(([x, y]) => x + ',' + y));
 
@@ -156,24 +157,28 @@ window.World = (function () {
   // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
   // cama à direita, cadeira e mesa com computador embaixo, porta no canto inferior esquerdo.
   add('wardrobe', 21, 2, 1.5, 6.5, { vertical: true, desc: 'roupas amontoadas. faz dias que não arrumo nada.' });
-  add('dresser', 23, 2, 1.75, 0.9, { desc: 'a cômoda. atrás dela, pela janela, a noite está quieta.' });
+  add('dresser', 23, 2, 1.75, 0.9, { action: 'phone', phone: true }); // o celular fica em cima (ver js/phone.js)
   add('window', 23, 1, 2, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   add('bed', 25, 2, 3, 7, { blanket: '#3c4560', messy: true, desc: 'a cama desarrumada. não consigo dormir.' });
   add('officeChair', 24.7, 9.35, 1.1, 0.85, { desc: 'a cadeira ainda quente.' });
-  add('pcDesk', 23, 10.3, 5, 1.7, { desc: 'o computador ligado. do lado, o celular virado pra baixo.' });
+  add('pcDesk', 23, 10.3, 5, 1.7, { desc: 'o computador ligado. a tela me encara de volta.' });
   // Banheiro
   add('showerFloor', 13, 17.6, 4, 2.4, { solid: false, decor: true, desc: 'o chuveiro pinga devagar.' });
-  add('bathSink', 13, 13, 1, 1.6, { action: 'mirror' }); // olhar no espelho (ver js/mirror.js)
+  add('bathSink', 13, 13, 1, 1.6, { action: 'mirror', mirror: 'banheiro' }); // olhar no espelho (ver js/mirror.js)
   add('toilet', 13.05, 15.3, 0.95, 1.1);
   add('glass', 13, 17.45, 1.9, 0.2);
-  // Quarto 2
-  add('rug2', 20, 15.3, 6, 2.4, { solid: false, decor: true });
-  add('bedH', 23, 13, 5, 2, { blanket: '#8a5a3c', pillowAccent: '#d9d2c4', desc: 'as camas arrumadas. ninguém vai dormir aqui hoje.' });
-  add('bedH', 23, 18, 5, 2, { blanket: '#8a5a3c', pillowAccent: '#d9d2c4', desc: 'as camas arrumadas. ninguém vai dormir aqui hoje.' });
-  add('nightstand', 27, 15.6, 1, 1.2);
-  add('wardrobe', 18, 15, 1, 5, { vertical: true });
-  add('desk', 20, 19.1, 2, 0.9, { laptop: true, desc: 'a tela do notebook ilumina o quarto vazio.' });
-  add('officeChair', 20.55, 18.05, 0.9, 0.9);
+  // Quarto da minha mãe (o de baixo, ao lado do banheiro): os guarda-roupas cercam a cama,
+  // a janela fica atrás do guarda-roupa de baixo (atrás da cabeceira), TV na parede de cima.
+  add('tvWall', 20, 13, 2, 0.375, { solid: false, decor: true, desc: 'a tv do quarto da minha mãe. desligada.' });
+  add('wardrobe', 18, 14.625, 1, 5.375, { vertical: true, desc: 'o guarda-roupa da minha mãe.' });
+  add('bed', 19.25, 15, 3, 3.5, { flipY: true, made: true, blanket: '#9a6a7a', desc: 'a cama da minha mãe, arrumada. o quarto está vazio.' });
+  add('wardrobe', 19, 18.5625, 3.25, 1.4375, { desc: 'atrás desse guarda-roupa tem uma janela. mal dá pra ver a noite.' });
+  add('wardrobe', 22.25, 16.375, 1.5, 3.625, { vertical: true, desc: 'mais roupas dela. tudo dobrado.' });
+  // Suíte da minha mãe
+  add('showerFloor', 25, 18.1875, 3, 1.8125, { solid: false, decor: true, desc: 'não gosto de ficar no banheiro da minha mãe.' });
+  add('sinkV', 27.25, 13.0625, 0.75, 2.75, { action: 'mirror', mirror: 'mae' });
+  add('toilet', 27.125, 16.5625, 0.875, 1, { flipX: true, desc: 'tudo aqui é tão arrumado. tão dela.' });
+  add('glass', 25.875, 18.0625, 2.125, 0.1875);
 
   // ---------- luzes (em pixels do mundo) ----------
   const MOON = [0.42, 0.52, 0.95];
@@ -196,10 +201,8 @@ window.World = (function () {
       { x: 25.4 * T, y: 11.0 * T, r: 66, c: [0.5, 0.72, 1.0], i: 0.62, kind: 'screen' },
     ],
     banheiro: [{ x: 14.5 * T, y: 19.5 * T, r: 48, c: MOON, i: 0.4 }],
-    quarto2: [
-      { x: 24.5 * T, y: 19.6 * T, r: 64, c: MOON, i: 0.38 },
-      { x: 21 * T, y: 19.2 * T, r: 40, c: [0.5, 0.72, 1.0], i: 0.6, kind: 'screen' },
-    ],
+    quarto_mae: [{ x: 20.8 * T, y: 18.4 * T, r: 60, c: MOON, i: 0.34 }],
+    banheiro_mae: [{ x: 26 * T, y: 14.6 * T, r: 44, c: [0.62, 0.66, 0.9], i: 0.26 }],
   };
 
   // ---------- colisão ----------
@@ -267,6 +270,7 @@ window.World = (function () {
     const ch = tileAt(x, y);
     if (ch === ',') return 'wood';
     if (room === 'banheiro') return 'bath';
+    if (room === 'banheiro_mae') return 'bath2';
     if (room === 'varanda') return 'balcony';
     return 'ceramic';
   }
@@ -279,6 +283,12 @@ window.World = (function () {
       R(ctx, px, py, 1, T, '#a19dab');
       R(ctx, px + 1, py + 1, T - 1, 1, '#c3bfc7');
       for (let i = 0; i < 3; i++) R(ctx, px + 2 + rand() * 12, py + 2 + rand() * 12, 1, 1, '#aaa6b1');
+    } else if (style === 'bath2') {
+      R(ctx, px, py, T, T, '#d3c9b8');
+      for (let k = 0; k < T; k += 8) {
+        R(ctx, px + k, py, 1, T, '#b9ab95');
+        R(ctx, px, py + k, T, 1, '#b9ab95');
+      }
     } else if (style === 'bath') {
       R(ctx, px, py, T, T, '#cfd2d8');
       for (let k = 0; k < T; k += 8) {
@@ -365,6 +375,19 @@ window.World = (function () {
 
   // ---- desenho dos móveis ----
   function drawFurniture(ctx, f) {
+    if (f.flipX || f.flipY) {
+      const x = OX + f.x * T, y = OY + f.y * T, w = f.w * T, h = f.h * T;
+      ctx.save();
+      ctx.translate(f.flipX ? Math.round(2 * x + w) : 0, f.flipY ? Math.round(2 * y + h) : 0);
+      ctx.scale(f.flipX ? -1 : 1, f.flipY ? -1 : 1);
+      drawFurnitureInner(ctx, f);
+      ctx.restore();
+      return;
+    }
+    drawFurnitureInner(ctx, f);
+  }
+
+  function drawFurnitureInner(ctx, f) {
     const x = OX + f.x * T, y = OY + f.y * T, w = f.w * T, h = f.h * T;
     const sh = 'rgba(8,4,16,0.35)';
     switch (f.type) {
@@ -655,9 +678,12 @@ window.World = (function () {
         R(ctx, x, y + h - 2, w, 2, '#4e3222');
         R(ctx, x + 3, y + 3, 6, 5, '#d8d0c0'); // porta-retrato
         R(ctx, x + 4, y + 4, 4, 3, '#5a6a8a');
-        R(ctx, x + 12, y + 3, 2, 4, '#9ad0c8'); // perfume
-        R(ctx, x + 15, y + 4, 2, 3, '#c07a9a');
-        disc(ctx, x + 22, y + 6, 2, '#a89a80'); // potinho de moedas
+        R(ctx, x + 11, y + 3, 2, 4, '#9ad0c8'); // perfume
+        if (f.phone) {
+          R(ctx, x + 16, y + 3, 6, 9, '#0e0e12'); // celular
+          R(ctx, x + 17, y + 4, 4, 7, '#1c2230');
+          R(ctx, x + 17, y + 4, 4, 1, '#3a4660');
+        } else disc(ctx, x + 22, y + 6, 2, '#a89a80');
         break;
       }
       case 'pcDesk': {
@@ -681,9 +707,7 @@ window.World = (function () {
         R(ctx, x + w - 12, y + 3, 10, h - 6, '#1c1c22');
         R(ctx, x + w - 12, y + 3, 10, 1, '#34343e');
         R(ctx, x + w - 4, y + 6, 1, 2, '#5ab0ff');
-        // celular virado pra baixo e caneca
-        R(ctx, x + 8, y + 7, 4, 7, '#111114');
-        R(ctx, x + 8, y + 7, 4, 1, '#2a2a30');
+        // caneca
         disc(ctx, x + 18, y + 9, 2, '#d8d0c8');
         R(ctx, x + 18, y + 9, 1, 1, '#4a2e1e');
         break;
@@ -748,6 +772,25 @@ window.World = (function () {
         disc(ctx, x + 9, y + h / 2, 3, '#c6ccd4');
         R(ctx, x + 3, y + h / 2 - 1, 3, 2, '#8a8f98');
         break;
+      case 'tvWall':
+        R(ctx, x, y, w, h, '#0c0c10');
+        R(ctx, x, y, w, 1, '#2e2e38');
+        R(ctx, x + 2, y + h - 2, w - 4, 1, '#1a1a22');
+        R(ctx, x + w / 2 - 3, y + h, 6, 1, 'rgba(0,0,0,0.4)');
+        break;
+      case 'sinkV': {
+        R(ctx, x - 1, y + 1, w, h, sh);
+        R(ctx, x, y, w, h, '#dedad2');
+        R(ctx, x, y, 1, h, '#f2efe8');
+        R(ctx, x + w - 3, y, 3, h, '#9fb0c4'); // espelho na parede
+        R(ctx, x + w - 2, y + 2, 1, h - 6, '#cfe0f0');
+        disc(ctx, x + 5, y + h / 2, 3, '#a8a49c');
+        disc(ctx, x + 5, y + h / 2, 2, '#c8c6c0');
+        R(ctx, x + 7, y + h / 2 - 1, 2, 2, '#8a8f98');
+        R(ctx, x + 2, y + 4, 2, 4, '#c88aa0'); // perfume
+        R(ctx, x + 2, y + h - 8, 3, 3, '#e8d8a8'); // creme
+        break;
+      }
       case 'toilet':
         R(ctx, x + 1, y + 1, w, h, sh);
         R(ctx, x, y + 1, 5, h - 2, '#dfe0e5'); // caixa
@@ -861,7 +904,18 @@ window.World = (function () {
 
   // Pontos de luz da cidade (desenhados DEPOIS da escuridão, para brilhar)
   function drawEmissive(ctx, roomId, cam, time, k) {
-    if (roomId !== 'varanda' || k <= 0.02) return;
+    if (k <= 0.02) return;
+    if (roomId === 'meu_quarto') {
+      // luzinha de notificação piscando no celular em cima da cômoda
+      if (Math.floor(time * 1.25) % 2 === 0) {
+        const prev = ctx.globalAlpha;
+        ctx.globalAlpha = prev * k;
+        R(ctx, Math.round(23 * T + 19 - cam.x), Math.round(2 * T + 4 - cam.y), 1, 1, '#4cff8a');
+        ctx.globalAlpha = prev;
+      }
+      return;
+    }
+    if (roomId !== 'varanda') return;
     const limit = 2 * T + 1 - cam.y; // só acima do parapeito
     const prev = ctx.globalAlpha;
     for (const L of cityLights) {

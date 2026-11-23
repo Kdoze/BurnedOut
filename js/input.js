@@ -6,7 +6,9 @@ window.Input = (function () {
   const listeners = [];
   const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
-  const ACTION_KEYS = ['Enter', 'NumpadEnter', ' ', 'z', 'Z', 'e', 'E', 'x', 'X'];
+  const ACTION_KEYS = ['Enter', 'NumpadEnter', ' ', 'z', 'Z', 'e', 'E'];
+  const BACK_KEYS = ['Escape', 'Backspace', 'x', 'X'];
+  let back = false;
   const DIRS = {
     ArrowUp: 'up', w: 'up', W: 'up',
     ArrowDown: 'down', s: 'down', S: 'down',
@@ -25,6 +27,10 @@ window.Input = (function () {
     }
     if (ACTION_KEYS.includes(e.key)) {
       if (!e.repeat) action = true;
+      e.preventDefault();
+    }
+    if (BACK_KEYS.includes(e.key)) {
+      if (!e.repeat) back = true;
       e.preventDefault();
     }
     gesture(e);
@@ -115,8 +121,14 @@ window.Input = (function () {
       action = false;
       return a;
     },
+    consumeBack() {
+      const b = back;
+      back = false;
+      return b;
+    },
     clear() {
       action = false;
+      back = false;
     },
     onGesture(fn) {
       listeners.push(fn);

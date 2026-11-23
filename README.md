@@ -6,6 +6,7 @@ Você anda por uma casa vazia à noite, começando no seu quarto. A música come
 o menino cai no chão e as vozes começam. O jogo termina junto com a música.
 
 No banheiro dá para olhar no espelho. Às vezes (10%) tem alguma coisa atrás de você.
+Na suíte da minha mãe também (5%), e não é a mesma coisa. O celular fica em cima da cômoda do meu quarto.
 
 ## Como jogar
 
@@ -13,6 +14,7 @@ No banheiro dá para olhar no espelho. Às vezes (10%) tem alguma coisa atrás d
 | --- | --- | --- |
 | Andar | setas ou WASD | direcional na tela |
 | Interagir / avançar texto | Enter, Espaço ou Z | botão **A** ou tocar na tela |
+| Voltar (no celular) | Esc, Backspace ou X | o **<** no topo da tela do celular |
 
 Recomendado: fones de ouvido. No celular, o jogo funciona deitado ou em pé (deitado fica maior).
 
@@ -43,14 +45,16 @@ Quase tudo que é texto ou tempo fica em **`js/config.js`**:
 - `INTRUSIVE`, `INTRUSIVE_BIG`, `INTRUSIVE_WALL`: as vozes intrusivas
 - `TREMBLE_AT` (2:30.1, o "drop" da música), `FALL_AT` (2:33), `MUSIC_FADE_IN`
 - `START_ROOM` / `START_POS`: onde o menino começa (o meu quarto)
-- `MIRROR_*`: chance da criatura no espelho, tempo até ela pegar, tempo atordoado
+- `MIRROR_*` / `MIRROR2_*`: chance das criaturas nos espelhos, frases, tempo até pegar, tempo atordoado
+- `PHONE_*`: hora, notificação, notas e a lista de conversas do WhatsApp do celular
 
 Outros arquivos:
 
 - `js/world.js`: mapa da casa (baseado na planta), móveis, textos dos objetos, luzes
 - `js/sprites.js`: o menino em pixel art (cores na paleta `PAL`)
 - `js/effects.js`: escuridão, tentáculos e vozes
-- `js/mirror.js`: o espelho do banheiro, a criatura e o efeito de atordoado
+- `js/mirror.js`: os espelhos, as duas criaturas, a captura e o efeito de atordoado
+- `js/phone.js`: o celular (tela de bloqueio, apps, WhatsApp)
 - `js/audio.js`: bips, música, drone/coração do final
 - `js/main.js`: estados do jogo (intro → exploração → queda → fim)
 
@@ -60,7 +64,8 @@ Outros arquivos:
 - `?t=148`: começa a música nesse segundo (ex.: perto da queda)
 - `?pos=6,14`: posição inicial do menino em tiles (ex.: na sala)
 - `?debug`: mostra o tempo da música e o cômodo atual
-- `?creature`: a criatura sempre aparece no espelho (ex.: `?skip&t=30&pos=14.3,14.4&creature`)
+- `?creature`: a criatura sempre aparece no espelho (ex.: `?skip&t=30&pos=14.3,14.4&creature`;
+  na suíte da minha mãe: `?skip&t=30&pos=26.6,14.4&creature`, olhando para a direita)
 
 Exemplo: `index.html?skip&t=148&pos=6,14&debug`. O `?t=` precisa de um servidor que aceite
 *range requests* (o GitHub Pages aceita; o `python3 -m http.server` não).
@@ -70,3 +75,5 @@ Exemplo: `index.html?skip&t=148&pos=6,14&debug`. O `?t=` precisa de um servidor 
 - Música: *Forgive Yourself (memory ver.)*. Os direitos pertencem aos autores originais.
 - Fonte: [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P), SIL Open Font License 1.1
   (ver `assets/fonts/OFL-PressStart2P.txt`). Convertida para bitmap em `js/fontdata.js`.
+- Fonte pequena do celular: [Tiny5](https://fonts.google.com/specimen/Tiny5), SIL Open Font License 1.1
+  (ver `assets/fonts/OFL-Tiny5.txt`). Convertida para bitmap em `js/fontsmall.js`.

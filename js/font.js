@@ -99,5 +99,78 @@
     return lines;
   }
 
-  window.Font = { draw, measure, wrap, CELL };
+  // ---------------- fonte pequena (largura variável) ----------------
+  const SG = window.FONT_SMALL || {};
+  const SH = window.FONT_SMALL_H || 8;
+  const schars = Object.keys(SG);
+  const sindex = {};
+  schars.forEach((c, i) => (sindex[c] = i));
+  const sbase = document.createElement('canvas');
+  sbase.width = COLS * 8;
+  sbase.height = Math.ceil(schars.length / COLS) * SH;
+  {
+    const x = sbase.getContext('2d');
+    const im = x.createImageData(sbase.width, sbase.height);
+    schars.forEach((c, i) => {
+      const hex = SG[c][1];
+      const gx = (i % COLS) * 8, gy = Math.floor(i / COLS) * SH;
+      for (let r = 0; r < SH; r++) {
+        const bits = parseInt(hex.substr(r * 2, 2), 16);
+        for (let b = 0; b < 8; b++) {
+          if (bits & (0x80 >> b)) {
+            const p = ((gy + r) * sbase.width + gx + b) * 4;
+            im.data[p] = im.data[p + 1] = im.data[p + 2] = im.data[p + 3] = 255;
+          }
+        }
+      }
+    });
+    x.putImageData(im, 0, 0);
+  }
+  const stinted = {};
+  function satlas(color) {
+    if (stinted[color]) return stinted[color];
+    const c = document.createElement('canvas');
+    c.width = sbase.width;
+    c.height = sbase.height;
+    const x = c.getContext('2d');
+    x.drawImage(sbase, 0, 0);
+    x.globalCompositeOperation = 'source-in';
+    x.fillStyle = color;
+    x.fillRect(0, 0, c.width, c.height);
+    stinted[color] = c;
+    return c;
+  }
+  function sadv(ch) {
+    const g = SG[ch] || SG['?'];
+    return g[0]; // o avanço já inclui 1px de espaço
+  }
+  function measureSmall(str) {
+    let w = 0;
+    for (const ch of str) w += sadv(ch);
+    return Math.max(0, w - 1);
+  }
+  function drawSmall(ctx, str, x, y, color, opts = {}) {
+    const a = satlas(color);
+    const prevA = ctx.globalAlpha;
+    if (opts.alpha != null) ctx.globalAlpha = prevA * opts.alpha;
+    let cx = Math.round(x);
+    const cy = Math.round(y);
+    for (const ch of str) {
+      let gi = sindex[ch];
+      if (gi === undefined) gi = sindex['?'];
+      if (ch !== ' ') ctx.drawImage(a, (gi % COLS) * 8, Math.floor(gi / COLS) * SH, 8, SH, cx, cy, 8, SH);
+      cx += sadv(ch);
+    }
+    ctx.globalAlpha = prevA;
+    return cx;
+  }
+  // corta com "..." se passar da largura
+  function fitSmall(str, maxW) {
+    if (measureSmall(str) <= maxW) return str;
+    const arr = [...str];
+    while (arr.length && measureSmall(arr.join('') + '...') > maxW) arr.pop();
+    return arr.join('').trimEnd() + '...';
+  }
+
+  window.Font = { draw, measure, wrap, CELL, drawSmall, measureSmall, fitSmall, SMALL_H: SH };
 })();

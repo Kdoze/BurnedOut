@@ -221,19 +221,33 @@ window.Sound = (function () {
     noiseBurst(sfx, t, 0.25, 250, 0.7, 0.35, 'lowpass');
   }
 
-  function heartbeat(vol) {
+  // Batida do coração ("tum-tum"). gap = distância entre as duas batidas.
+  function heartbeat(vol, gap) {
     if (!ctx || ended) return;
     const t = now();
-    [[0, 1], [0.17, 0.65]].forEach(([dt, k]) => {
+    const g2 = gap || 0.17;
+    [[0, 1], [g2, 0.7]].forEach(([dt, k]) => {
+      // grave (sente no peito)
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = 'sine';
-      o.frequency.setValueAtTime(72, t + dt);
-      o.frequency.exponentialRampToValueAtTime(42, t + dt + 0.13);
-      env(g, t + dt, vol * k, 0.008, 0.16);
+      o.frequency.setValueAtTime(78, t + dt);
+      o.frequency.exponentialRampToValueAtTime(40, t + dt + 0.14);
+      env(g, t + dt, vol * k, 0.006, 0.18);
       o.connect(g); g.connect(despairBus);
       o.start(t + dt);
-      o.stop(t + dt + 0.22);
+      o.stop(t + dt + 0.24);
+      // "toque" abafado (aparece até em caixinha de celular)
+      const o2 = ctx.createOscillator();
+      const g3 = ctx.createGain();
+      o2.type = 'triangle';
+      o2.frequency.setValueAtTime(160, t + dt);
+      o2.frequency.exponentialRampToValueAtTime(70, t + dt + 0.06);
+      env(g3, t + dt, vol * k * 0.35, 0.003, 0.07);
+      o2.connect(g3); g3.connect(despairBus);
+      o2.start(t + dt);
+      o2.stop(t + dt + 0.1);
+      noiseBurst(despairBus, t + dt, 0.06, 500, 0.7, vol * k * 0.12, 'lowpass');
     });
   }
 
@@ -255,14 +269,29 @@ window.Sound = (function () {
       o.start(t);
       return o;
     });
-    // zumbido (tinnitus) bem baixinho
-    const ring = ctx.createOscillator();
-    ring.type = 'sine';
-    ring.frequency.value = 5200;
+    // zumbido no ouvido (tinnitus): dois tons quase iguais (tremulam) + um harmônico,
+    // com um "pulsar" lento de volume
     const rg = ctx.createGain();
     rg.gain.value = 0;
-    ring.connect(rg); rg.connect(despairBus);
-    ring.start(t);
+    const trem = ctx.createGain();
+    trem.gain.value = 1;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.23;
+    const lfoAmt = ctx.createGain();
+    lfoAmt.gain.value = 0;
+    lfo.connect(lfoAmt); lfoAmt.connect(trem.gain);
+    lfo.start(t);
+    trem.connect(rg); rg.connect(despairBus);
+    const ring = [[5200, 1], [5211, 0.8], [7810, 0.22]].map(([fq, a]) => {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = fq;
+      const ga = ctx.createGain();
+      ga.gain.value = a;
+      o.connect(ga); ga.connect(trem);
+      o.start(t);
+      return o;
+    });
     // ruído grave contínuo
     const ns = ctx.createBufferSource();
     ns.buffer = noiseBuf;
@@ -274,7 +303,7 @@ window.Sound = (function () {
     ng.gain.value = 0;
     ns.connect(nf); nf.connect(ng); ng.connect(despairBus);
     ns.start(t);
-    despairNodes = { g, lp, oscs, ring, rg, ns, ng };
+    despairNodes = { g, lp, oscs, ring, rg, ns, ng, lfoAmt };
   }
 
   function setDespair(D) {
@@ -283,7 +312,11 @@ window.Sound = (function () {
     if (despairNodes) {
       despairNodes.g.gain.setTargetAtTime(0.02 + D * 0.11, t, 0.5);
       despairNodes.lp.frequency.setTargetAtTime(160 + D * 260, t, 0.5);
-      despairNodes.rg.gain.setTargetAtTime(D > 0.55 ? (D - 0.55) * 0.022 : 0, t, 1.0);
+      // o zumbido começa cedo e vai ficando bem presente (e mais agudo)
+      const ringD = Math.max(0, (D - 0.04) / 0.96);
+      despairNodes.rg.gain.setTargetAtTime(0.004 + Math.pow(ringD, 1.15) * 0.03, t, 0.8);
+      despairNodes.lfoAmt.gain.setTargetAtTime(0.35 * ringD, t, 1.0);
+      despairNodes.ring.forEach((o, i) => o.frequency.setTargetAtTime([5200, 5211, 7810][i] * (1 + D * 0.16), t, 1.5));
       despairNodes.ng.gain.setTargetAtTime(D * 0.05, t, 0.5);
     }
     if (useGraph && musicFilter) {
@@ -338,6 +371,48 @@ window.Sound = (function () {
       m.ng.gain.setTargetAtTime(0.0001, t, 0.08);
       for (const o of m.oscs) o.stop(t + 0.5);
       m.ns.stop(t + 0.5);
+    }
+  }
+
+  // Ela agarra: baque no peito + um gemido agudo subindo
+  function grabStart() {
+    if (!ctx || ended) return;
+    const t = now();
+    heartbeat(1.0, 0.12);
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(140, t);
+    o.frequency.exponentialRampToValueAtTime(620, t + 0.55);
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 700;
+    f.Q.value = 2;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.18, t + 0.5);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.62);
+    o.connect(f); f.connect(g); g.connect(master);
+    o.start(t);
+    o.stop(t + 0.65);
+    noiseBurst(master, t, 0.55, 300, 1, 0.12, 'lowpass');
+  }
+
+  // Vidro do espelho estilhaçando
+  function shatter() {
+    if (!ctx || ended) return;
+    const t = now();
+    noiseBurst(master, t, 0.5, 4200, 0.7, 0.3, 'highpass');
+    noiseBurst(master, t, 0.25, 900, 1.2, 0.18);
+    for (let i = 0; i < 14; i++) {
+      const dt = Math.random() * 0.6;
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.value = 2200 + Math.random() * 4200;
+      const g = ctx.createGain();
+      env(g, t + dt, 0.03 + Math.random() * 0.04, 0.002, 0.08 + Math.random() * 0.12);
+      o.connect(g); g.connect(master);
+      o.start(t + dt);
+      o.stop(t + dt + 0.25);
     }
   }
 
@@ -483,6 +558,8 @@ window.Sound = (function () {
     setDespair,
     mirrorDrone,
     screech,
+    grabStart,
+    shatter,
     setDaze,
     startMusic,
     update,
