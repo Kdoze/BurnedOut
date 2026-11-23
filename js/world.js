@@ -15,8 +15,8 @@ window.World = (function () {
     '#...........#,,,,,,,#,,,,,,,#',
     '#...........#####D###,,,,,,,#',
     '#...................#,,,,,,,#',
-    '#...................D,,,,,,,#',
     '#...................#,,,,,,,#',
+    '#...................D,,,,,,,#',
     '#...........###D##D##########',
     '#...........#....#,,,,,,,,,,#',
     '#...........#....#,,,,,,,,,,#',
@@ -37,7 +37,7 @@ window.World = (function () {
     sala: [5, 10],
     varanda: [5, 4],
     quarto: [16, 4],
-    suite: [24, 6],
+    meu_quarto: [24, 6],
     banheiro: [14, 15],
     quarto2: [22, 16],
   };
@@ -45,7 +45,7 @@ window.World = (function () {
   // Janelas (tiles de parede)
   const WINDOWS = [
     [15, 0], [16, 0], [17, 0],
-    [23, 1], [24, 1], [25, 1],
+    [23, 1], [24, 1], // atrás da cômoda do meu quarto
     [4, 20], [5, 20],
     [14, 20],
     [23, 20], [24, 20], [25, 20],
@@ -146,21 +146,24 @@ window.World = (function () {
   add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
   // Quarto (do menino)
   add('carpet', 15.2, 2.5, 3.6, 4, { solid: false, decor: true });
-  add('bed', 13, 1, 2, 4, { blanket: '#7a5442', pillowAccent: '#b0303a', desc: 'a cama está desarrumada. não consigo dormir.' });
-  add('desk', 16, 1, 2, 1, { lamp: true, phone: true, desc: 'a luminária ainda acesa. o celular, virado pra baixo.' });
+  add('bed', 13, 1, 2, 4, { blanket: '#7a5442', pillowAccent: '#b0303a', made: true, desc: 'uma cama arrumada. ninguém dorme aqui hoje.' });
+  add('desk', 16, 1, 2, 1, { lamp: true, lampOff: true, notebook: true, desc: 'a luminária apagada. tudo no lugar.' });
   add('officeChair', 16.45, 2.05, 0.9, 0.9);
   add('wardrobe', 19, 1, 1, 4, { vertical: true });
-  add('shelfItems', 13, 7.15, 3, 0.85, { desc: 'livros que eu não abro há meses.' });
+  add('shelfItems', 13, 7.15, 3, 0.85, { desc: 'livros e tênis guardados.' });
   add('window', 15, 0, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   // Suíte
-  add('carpet', 21.6, 2.6, 5, 6, { solid: false, decor: true, light: true });
-  add('nightstand', 27, 3, 1, 1);
-  add('nightstand', 27, 7, 1, 1);
-  add('bedH', 23, 4, 5, 3, { blanket: '#d8cfc0', pillowAccent: '#a32a33', tray: true, desc: 'o quarto está vazio.' });
-  add('wardrobe', 23, 11, 5, 1);
+  // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
+  // cama à direita, cadeira e mesa com computador embaixo, porta no canto inferior esquerdo.
+  add('wardrobe', 21, 2, 1.5, 6.5, { vertical: true, desc: 'roupas amontoadas. faz dias que não arrumo nada.' });
+  add('dresser', 23, 2, 1.75, 0.9, { desc: 'a cômoda. atrás dela, pela janela, a noite está quieta.' });
+  add('window', 23, 1, 2, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
+  add('bed', 25, 2, 3, 7, { blanket: '#3c4560', messy: true, desc: 'a cama desarrumada. não consigo dormir.' });
+  add('officeChair', 24.7, 9.35, 1.1, 0.85, { desc: 'a cadeira ainda quente.' });
+  add('pcDesk', 23, 10.3, 5, 1.7, { desc: 'o computador ligado. do lado, o celular virado pra baixo.' });
   // Banheiro
   add('showerFloor', 13, 17.6, 4, 2.4, { solid: false, decor: true, desc: 'o chuveiro pinga devagar.' });
-  add('bathSink', 13, 13, 1, 1.6, { desc: 'evito olhar no espelho.' });
+  add('bathSink', 13, 13, 1, 1.6, { action: 'mirror' }); // olhar no espelho (ver js/mirror.js)
   add('toilet', 13.05, 15.3, 0.95, 1.1);
   add('glass', 13, 17.45, 1.9, 0.2);
   // Quarto 2
@@ -176,10 +179,7 @@ window.World = (function () {
   const MOON = [0.42, 0.52, 0.95];
   const WARM = [1.0, 0.72, 0.42];
   const LIGHTS = {
-    quarto: [
-      { x: 17.55 * T, y: 1.4 * T, r: 74, c: WARM, i: 0.95, kind: 'lamp' },
-      { x: 16.5 * T, y: 1.6 * T, r: 56, c: MOON, i: 0.35 },
-    ],
+    quarto: [{ x: 16.5 * T, y: 1.6 * T, r: 60, c: MOON, i: 0.4 }],
     sala: [
       { x: 6.5 * T, y: 12.3 * T, r: 78, c: WARM, i: 0.75, kind: 'lamp' },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
@@ -191,7 +191,10 @@ window.World = (function () {
       { x: 7 * T, y: 3 * T, r: 58, c: [0.55, 0.5, 0.85], i: 0.45 },
       { x: 11 * T, y: 3 * T, r: 58, c: [0.55, 0.5, 0.85], i: 0.45 },
     ],
-    suite: [{ x: 24.5 * T, y: 2.3 * T, r: 70, c: MOON, i: 0.42 }],
+    meu_quarto: [
+      { x: 24 * T, y: 2.4 * T, r: 62, c: MOON, i: 0.42 },
+      { x: 25.4 * T, y: 11.0 * T, r: 66, c: [0.5, 0.72, 1.0], i: 0.62, kind: 'screen' },
+    ],
     banheiro: [{ x: 14.5 * T, y: 19.5 * T, r: 48, c: MOON, i: 0.4 }],
     quarto2: [
       { x: 24.5 * T, y: 19.6 * T, r: 64, c: MOON, i: 0.38 },
@@ -216,7 +219,7 @@ window.World = (function () {
   function furnitureAt(px, py) {
     let best = null;
     for (const f of F) {
-      if (!f.desc) continue;
+      if (!f.desc && !f.action) continue;
       const fx = f.x * T, fy = f.y * T, fw = f.w * T, fh = f.h * T;
       if (px >= fx && px < fx + fw && py >= fy && py < fy + fh) {
         if (!best || !f.decor) best = f;
@@ -577,16 +580,32 @@ window.World = (function () {
         R(ctx, x, y, w, h, '#5a3a26');
         R(ctx, x, y, w, 4, '#6e4a32'); // cabeceira
         R(ctx, x + 2, y + 5, w - 4, h - 7, '#e2dcd2'); // lençol
-        R(ctx, x + 4, y + 6, w - 8, 7, '#f2eee8'); // travesseiro
-        R(ctx, x + 4, y + 12, w - 8, 1, '#cfc8bc');
-        R(ctx, x + 6, y + 7, 6, 4, f.pillowAccent);
+        if (w >= 40) {
+          const pw = Math.floor((w - 12) / 2);
+          R(ctx, x + 4, y + 6, pw, 8, '#f2eee8'); // travesseiros
+          R(ctx, x + 8 + pw, y + 7, pw, 8, '#eae5dd');
+          R(ctx, x + 4, y + 13, pw, 1, '#cfc8bc');
+          R(ctx, x + 8 + pw, y + 14, pw, 1, '#cfc8bc');
+        } else {
+          R(ctx, x + 4, y + 6, w - 8, 7, '#f2eee8'); // travesseiro
+          R(ctx, x + 4, y + 12, w - 8, 1, '#cfc8bc');
+          if (f.pillowAccent) R(ctx, x + 6, y + 7, 6, 4, f.pillowAccent);
+        }
         R(ctx, x + 2, y + 20, w - 4, h - 22, f.blanket); // cobertor
         R(ctx, x + 2, y + 20, w - 4, 2, '#e2dcd2');
-        // cobertor bagunçado
-        R(ctx, x + 6, y + 28, 10, 1, 'rgba(0,0,0,0.25)');
-        R(ctx, x + 14, y + 36, 12, 1, 'rgba(0,0,0,0.25)');
-        R(ctx, x + 4, y + 45, 9, 1, 'rgba(255,255,255,0.12)');
-        R(ctx, x + w - 6, y + 24, 4, 30, 'rgba(0,0,0,0.18)');
+        if (f.messy) {
+          // cobertor jogado, metade caída
+          R(ctx, x + 2, y + 18, 14, 4, f.blanket);
+          R(ctx, x + w - 14, y + 20, 12, 12, '#e2dcd2');
+          for (let j = 28; j < h - 6; j += 9) R(ctx, x + 5 + ((j * 7) % 13), y + j, 14, 1, 'rgba(0,0,0,0.28)');
+          for (let j = 33; j < h - 6; j += 11) R(ctx, x + 3 + ((j * 5) % 17), y + j, 10, 1, 'rgba(255,255,255,0.10)');
+          R(ctx, x - 2, y + h - 30, 3, 22, f.blanket); // pontinha caindo da cama
+        } else if (!f.made) {
+          R(ctx, x + 6, y + 28, 10, 1, 'rgba(0,0,0,0.25)');
+          R(ctx, x + 14, y + 36, 12, 1, 'rgba(0,0,0,0.25)');
+          R(ctx, x + 4, y + 45, 9, 1, 'rgba(255,255,255,0.12)');
+        }
+        R(ctx, x + w - 6, y + 24, 4, h - 30, 'rgba(0,0,0,0.16)');
         break;
       }
       case 'bedH': {
@@ -614,12 +633,12 @@ window.World = (function () {
         R(ctx, x, y, w, h, '#7a5333');
         R(ctx, x, y + h - 2, w, 2, '#5e3f26');
         if (f.lamp) {
-          disc(ctx, x + w - 6, y + 5, 4, '#e8cf8a');
-          disc(ctx, x + w - 6, y + 5, 2, '#fff2c4');
+          disc(ctx, x + w - 6, y + 5, 4, f.lampOff ? '#8a7f6a' : '#e8cf8a');
+          disc(ctx, x + w - 6, y + 5, 2, f.lampOff ? '#a39880' : '#fff2c4');
+        }
+        if (f.notebook) {
           R(ctx, x + 3, y + 3, 10, 7, '#6f7480'); // notebook fechado
           R(ctx, x + 3, y + 3, 10, 1, '#8b909b');
-          R(ctx, x + 15, y + 6, 3, 5, '#141418'); // celular virado
-          R(ctx, x + 15, y + 6, 3, 1, '#2a2a30');
         }
         if (f.laptop) {
           R(ctx, x + 8, y + 2, 14, 3, '#1c2836');
@@ -627,6 +646,46 @@ window.World = (function () {
           R(ctx, x + 8, y + 5, 14, 7, '#8b909b');
           R(ctx, x + 9, y + 6, 12, 4, '#6f7480');
         }
+        break;
+      }
+      case 'dresser': {
+        R(ctx, x + 1, y + 1, w, h, sh);
+        R(ctx, x, y, w, h, '#6a4630');
+        R(ctx, x, y, w, 1, '#8a6046');
+        R(ctx, x, y + h - 2, w, 2, '#4e3222');
+        R(ctx, x + 3, y + 3, 6, 5, '#d8d0c0'); // porta-retrato
+        R(ctx, x + 4, y + 4, 4, 3, '#5a6a8a');
+        R(ctx, x + 12, y + 3, 2, 4, '#9ad0c8'); // perfume
+        R(ctx, x + 15, y + 4, 2, 3, '#c07a9a');
+        disc(ctx, x + 22, y + 6, 2, '#a89a80'); // potinho de moedas
+        break;
+      }
+      case 'pcDesk': {
+        R(ctx, x + 2, y + 2, w, h, sh);
+        R(ctx, x, y, w, h, '#5c4130');
+        R(ctx, x, y, w, 1, '#7a5840');
+        R(ctx, x, y + h - 2, w, 2, '#3e2a1e');
+        for (let i = 9; i < w; i += 17) R(ctx, x + i, y + 1, 1, h - 3, '#53392a');
+        // monitor encostado na parede (tela virada para a cadeira)
+        const mx = x + 26, my = y + h - 9;
+        R(ctx, mx, my, 30, 5, '#141418');
+        R(ctx, mx, my, 30, 1, '#9fd0ff');
+        R(ctx, mx + 1, my + 1, 28, 1, '#4f7fb8');
+        R(ctx, mx + 12, my + 5, 6, 2, '#26262c');
+        // teclado e mouse
+        R(ctx, mx + 2, y + 5, 24, 6, '#3a3a44');
+        for (let i = 0; i < 11; i++) for (let j = 0; j < 2; j++) R(ctx, mx + 3 + i * 2, y + 6 + j * 2, 1, 1, '#6a6a78');
+        R(ctx, mx + 29, y + 7, 3, 4, '#2c2c34');
+        R(ctx, mx + 30, y + 7, 1, 1, '#d04060');
+        // gabinete com led
+        R(ctx, x + w - 12, y + 3, 10, h - 6, '#1c1c22');
+        R(ctx, x + w - 12, y + 3, 10, 1, '#34343e');
+        R(ctx, x + w - 4, y + 6, 1, 2, '#5ab0ff');
+        // celular virado pra baixo e caneca
+        R(ctx, x + 8, y + 7, 4, 7, '#111114');
+        R(ctx, x + 8, y + 7, 4, 1, '#2a2a30');
+        disc(ctx, x + 18, y + 9, 2, '#d8d0c8');
+        R(ctx, x + 18, y + 9, 1, 1, '#4a2e1e');
         break;
       }
       case 'officeChair':

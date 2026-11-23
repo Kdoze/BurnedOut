@@ -100,6 +100,22 @@ window.Effects = (function () {
         d[o] = r; d[o + 1] = g; d[o + 2] = bl;
       }
     }
+    // onda (atordoado): cada linha desliza um pouco para os lados
+    if (p.wave > 0.3) {
+      const tmp = new Uint8ClampedArray(W * 4);
+      for (let y = 0; y < H; y++) {
+        const sh = Math.round(Math.sin(y * 0.09 + (p.waveT || 0) * 5) * p.wave + Math.sin(y * 0.031 - (p.waveT || 0) * 2.3) * p.wave * 0.5);
+        if (!sh) continue;
+        const row = y * W * 4;
+        tmp.set(d.subarray(row, row + W * 4));
+        for (let x = 0; x < W; x++) {
+          const sx = Math.min(W - 1, Math.max(0, x - sh)) * 4;
+          d[row + x * 4] = tmp[sx];
+          d[row + x * 4 + 1] = tmp[sx + 1];
+          d[row + x * 4 + 2] = tmp[sx + 2];
+        }
+      }
+    }
     // glitch: algumas linhas deslocadas
     if (p.glitch > 0 && Math.random() < p.glitch) {
       const n = 1 + ((Math.random() * 6) | 0);
@@ -251,12 +267,13 @@ window.Effects = (function () {
     const text = big ? pick(C.INTRUSIVE_BIG) : pick(C.INTRUSIVE);
     let scale = big ? (D > 0.6 && Math.random() < 0.5 ? 3 : 2) : Math.random() < D * 0.25 ? 2 : 1;
     while (scale > 1 && Font.measure(text, scale) > W - 12) scale--;
-    const w = Font.measure(text, scale);
-    const h = 8 * scale;
+    // frases longas quebram em duas linhas
+    const lines = Font.measure(text, scale) > W - 16 ? Font.wrap(text, Math.floor((W - 16) / (8 * scale))) : [text];
+    const w = Math.max(...lines.map((l) => Font.measure(l, scale)));
+    const h = (lines.length * 10 - 2) * scale;
     let x, y, ok = false;
     const overlaps = (ax, ay, aw, ah) => words.some((o) => {
-      const ow = Font.measure(o.text, o.scale), oh = 8 * o.scale;
-      return ax < o.x + ow + 4 && ax + aw + 4 > o.x && ay < o.y + oh + 3 && ay + ah + 3 > o.y;
+      return ax < o.x + o.w + 4 && ax + aw + 4 > o.x && ay < o.y + o.h + 3 && ay + ah + 3 > o.y;
     });
     const hitsPlayer = (ax, ay, aw, ah) => target && target.x > ax - 20 && target.x < ax + aw + 20 && target.y > ay - 20 && target.y < ay + ah + 16;
     for (let tries = 0; tries < 16 && !ok; tries++) {
@@ -274,6 +291,9 @@ window.Effects = (function () {
     const color = red ? (Math.random() < 0.5 ? '#c8142c' : '#8e0c1c') : Math.random() < 0.15 ? '#9d96a8' : '#ece8f2';
     words.push({
       text,
+      lines,
+      w,
+      h,
       chars: [...text],
       x: Math.round(x),
       y: Math.round(y),
@@ -337,8 +357,13 @@ window.Effects = (function () {
       let alpha = Math.min(fadeIn, fadeOut);
       if (D > 0.45 && Math.random() < 0.04 + D * 0.06) alpha *= 0.2; // pisca
       const jitter = w.scale > 1 ? (D > 0.5 ? 2 : 1) : D > 0.3 ? 1 : (Math.sin(time * 20 + w.flick * 10) > 0.6 ? 1 : 0);
-      const txt = w.chars.slice(0, Math.floor(w.shown)).join('');
-      Font.draw(ctx, txt, w.x, w.y, w.color, { scale: w.scale, jitter, shadow: '#000000', alpha });
+      let left = Math.floor(w.shown);
+      w.lines.forEach((ln, i) => {
+        const arr = [...ln];
+        const n = Math.max(0, Math.min(arr.length, left));
+        left -= arr.length + 1;
+        if (n > 0) Font.draw(ctx, arr.slice(0, n).join(''), w.x, w.y + i * 10 * w.scale, w.color, { scale: w.scale, jitter, shadow: '#000000', alpha });
+      });
     }
   }
 

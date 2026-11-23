@@ -29,8 +29,8 @@ window.Sound = (function () {
     return b;
   }
 
-  // Precisa ser chamado DENTRO de um evento de toque/tecla (regras de autoplay, iOS).
-  function unlock() {
+  // Cria o contexto de áudio (pode nascer "suspenso" se ainda não houve toque/tecla).
+  function ensureCtx() {
     try {
       if (navigator.audioSession) navigator.audioSession.type = 'playback';
     } catch (e) { /* ignore */ }
@@ -75,6 +75,16 @@ window.Sound = (function () {
         s.start(0);
       }
     }
+  }
+
+  // Tenta ligar o áudio logo ao abrir (alguns navegadores permitem).
+  function tryEarly() {
+    try { ensureCtx(); } catch (e) { /* ignore */ }
+  }
+
+  // Precisa ser chamado DENTRO de um evento de toque/tecla (regras de autoplay, iOS).
+  function unlock() {
+    ensureCtx();
     if (ctx && ctx.state !== 'running') ctx.resume();
     // "Destrava" o elemento de áudio dentro do gesto, para poder tocar depois (iOS).
     // Só marca como destravado quando o play() realmente funciona.
@@ -283,6 +293,111 @@ window.Sound = (function () {
     }
   }
 
+  // ---------------- espelho ----------------
+  let mirrorNodes = null;
+  // Drone grave que cresce enquanto a criatura está no reflexo
+  function mirrorDrone(on) {
+    if (!ctx || ended) return;
+    const t = now();
+    if (on && !mirrorNodes) {
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.16, t + 5);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(140, t);
+      lp.frequency.linearRampToValueAtTime(520, t + 5);
+      lp.connect(g); g.connect(master);
+      const oscs = [41, 41.6, 61.7, 87.3].map((fq, i) => {
+        const o = ctx.createOscillator();
+        o.type = i < 2 ? 'sawtooth' : 'triangle';
+        o.frequency.value = fq;
+        o.connect(lp);
+        o.start(t);
+        return o;
+      });
+      const ns = ctx.createBufferSource();
+      ns.buffer = noiseBuf;
+      ns.loop = true;
+      const nf = ctx.createBiquadFilter();
+      nf.type = 'bandpass';
+      nf.frequency.value = 900;
+      nf.Q.value = 6;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.linearRampToValueAtTime(0.05, t + 5);
+      ns.connect(nf); nf.connect(ng); ng.connect(master);
+      ns.start(t);
+      mirrorNodes = { g, oscs, ns, ng };
+    } else if (!on && mirrorNodes) {
+      const m = mirrorNodes;
+      mirrorNodes = null;
+      m.g.gain.cancelScheduledValues(t);
+      m.g.gain.setTargetAtTime(0.0001, t, 0.08);
+      m.ng.gain.cancelScheduledValues(t);
+      m.ng.gain.setTargetAtTime(0.0001, t, 0.08);
+      for (const o of m.oscs) o.stop(t + 0.5);
+      m.ns.stop(t + 0.5);
+    }
+  }
+
+  // Grito da criatura quando ela "pega" o menino
+  function screech() {
+    if (!ctx || ended) return;
+    const t = now();
+    const g = ctx.createGain();
+    env(g, t, 0.32, 0.01, 0.9);
+    const ws = ctx.createWaveShaper();
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) {
+      const x = i / 128 - 1;
+      curve[i] = Math.tanh(x * 4);
+    }
+    ws.curve = curve;
+    ws.connect(g); g.connect(master);
+    [1, 1.47, 2.03].forEach((m) => {
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(820 * m, t);
+      o.frequency.exponentialRampToValueAtTime(95 * m, t + 0.85);
+      o.connect(ws);
+      o.start(t);
+      o.stop(t + 1);
+    });
+    noiseBurst(master, t, 0.7, 2500, 0.8, 0.25);
+    thud();
+  }
+
+  // Atordoado: música abafada + zumbido (k de 1 até 0)
+  let dazeRing = null;
+  function setDaze(k) {
+    if (!ctx) return;
+    const t = now();
+    if (k > 0 && !dazeRing) {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = 4700;
+      const g = ctx.createGain();
+      g.gain.value = 0;
+      o.connect(g); g.connect(master);
+      o.start(t);
+      dazeRing = { o, g };
+    }
+    if (dazeRing) {
+      dazeRing.g.gain.setTargetAtTime(0.022 * k, t, 0.1);
+      if (k <= 0) {
+        const r = dazeRing;
+        dazeRing = null;
+        r.g.gain.setTargetAtTime(0, t, 0.05);
+        r.o.stop(t + 0.3);
+      }
+    }
+    if (useGraph && musicFilter) {
+      const f = k > 0 ? 20000 * Math.pow(600 / 20000, k) : 20000;
+      musicFilter.frequency.setTargetAtTime(f, t, k > 0 ? 0.15 : 0.05);
+    }
+  }
+
   // ---------------- música ----------------
   function startMusic(fromTime) {
     musicStarted = true;
@@ -357,6 +472,7 @@ window.Sound = (function () {
   return {
     music,
     unlock,
+    tryEarly,
     bip,
     confirm,
     voice,
@@ -365,6 +481,9 @@ window.Sound = (function () {
     heartbeat,
     startDespair,
     setDespair,
+    mirrorDrone,
+    screech,
+    setDaze,
     startMusic,
     update,
     musicTime,

@@ -2,8 +2,10 @@
 
 Um jogo curto em pixel art (estilo 8-bit), sobre uma noite real.
 
-Você anda por uma casa vazia à noite. A música começa baixinho; em **2:33** o menino cai no chão
-e as vozes começam. O jogo termina junto com a música.
+Você anda por uma casa vazia à noite, começando no seu quarto. A música começa baixinho; em **2:33**
+o menino cai no chão e as vozes começam. O jogo termina junto com a música.
+
+No banheiro dá para olhar no espelho. Às vezes (10%) tem alguma coisa atrás de você.
 
 ## Como jogar
 
@@ -40,13 +42,15 @@ Quase tudo que é texto ou tempo fica em **`js/config.js`**:
 - `INTRO_TEXTS`: mensagens antes do jogo começar
 - `INTRUSIVE`, `INTRUSIVE_BIG`, `INTRUSIVE_WALL`: as vozes intrusivas
 - `TREMBLE_AT` (2:30.1, o "drop" da música), `FALL_AT` (2:33), `MUSIC_FADE_IN`
-- `START_ROOM` / `START_POS`: onde o menino começa
+- `START_ROOM` / `START_POS`: onde o menino começa (o meu quarto)
+- `MIRROR_*`: chance da criatura no espelho, tempo até ela pegar, tempo atordoado
 
 Outros arquivos:
 
 - `js/world.js`: mapa da casa (baseado na planta), móveis, textos dos objetos, luzes
 - `js/sprites.js`: o menino em pixel art (cores na paleta `PAL`)
 - `js/effects.js`: escuridão, tentáculos e vozes
+- `js/mirror.js`: o espelho do banheiro, a criatura e o efeito de atordoado
 - `js/audio.js`: bips, música, drone/coração do final
 - `js/main.js`: estados do jogo (intro → exploração → queda → fim)
 
@@ -56,6 +60,7 @@ Outros arquivos:
 - `?t=148`: começa a música nesse segundo (ex.: perto da queda)
 - `?pos=6,14`: posição inicial do menino em tiles (ex.: na sala)
 - `?debug`: mostra o tempo da música e o cômodo atual
+- `?creature`: a criatura sempre aparece no espelho (ex.: `?skip&t=30&pos=14.3,14.4&creature`)
 
 Exemplo: `index.html?skip&t=148&pos=6,14&debug`. O `?t=` precisa de um servidor que aceite
 *range requests* (o GitHub Pages aceita; o `python3 -m http.server` não).

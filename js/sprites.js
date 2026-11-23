@@ -2,9 +2,9 @@
 // Camisa listrada roxo/lilás, calça preta, cabelo cacheado e cheio.
 window.Sprites = (function () {
   const PAL = {
-    k: '#1a1222', // contorno
-    h: '#2b1c17', // cabelo
-    H: '#4d3427', // brilho do cabelo
+    k: '#0b080f', // contorno
+    h: '#17131c', // cabelo (quase preto)
+    H: '#322c3b', // brilho dos cachos
     s: '#c48a60', // pele
     S: '#9b6442', // sombra da pele
     e: '#1a1222', // olho
@@ -20,16 +20,16 @@ window.Sprites = (function () {
   const DOWN = [
     '................',
     '....kk.kk.kk....',
-    '...khhkhhkhhk...',
-    '..khhHhhhhHhhk..',
-    '.khHhhhhhhhhHhk.',
-    '.khhhhHhhHhhhhk.',
-    '.khhshhsshhshhk.',
-    '.khhsssssssshhk.',
+    '..kkhhkhhkhhkk..',
+    '.khHhhHhhHhhHhk.',
+    'khhhHhhhhhhHhhhk',
+    'khHhhhHhhHhhhHhk',
+    'khhhHshhhhsHhhhk',
+    'khhhsssssssshhhk',
     '.khhsesssseshhk.',
-    '.khhsesssseshhk.',
-    '..khSssSSssShk..',
-    '...kkSssssSkk...',
+    'khhhsesssseshhhk',
+    '.khhSssSSssShhk.',
+    '..kkkSssssSkkk..',
     '...kkpSSSSpkk...',
     '..kppppppppppk..',
     '.kllllllllllllk.',
@@ -59,16 +59,16 @@ window.Sprites = (function () {
   const UP = [
     '................',
     '....kk.kk.kk....',
-    '...khhkhhkhhk...',
-    '..khhHhhhhHhhk..',
-    '.khHhhhhhhhhHhk.',
-    '.khhhhHhhHhhhhk.',
-    '.khhhhhhhhhhhhk.',
-    '.khHhhhHHhhhHhk.',
-    '.khhhhhhhhhhhhk.',
-    '.khhHhhhhhhHhhk.',
-    '..khhhhHHhhhhk..',
-    '...kkhhhhhhkk...',
+    '..kkhhkhhkhhkk..',
+    '.khHhhHhhHhhHhk.',
+    'khhhHhhhhhhHhhhk',
+    'khHhhhHhhHhhhHhk',
+    'khhhHhhHHhhHhhhk',
+    'khHhhhhhhhhhhHhk',
+    '.khhhHhhhhHhhhk.',
+    'khhHhhhHHhhhHhhk',
+    '.khhhHhhhhHhhhk.',
+    '..kkkhhhhhhkkk..',
     '...kkpSSSSpkk...',
     '..kppppppppppk..',
     '.kllllllllllllk.',
@@ -85,45 +85,47 @@ window.Sprites = (function () {
   const UP_W1 = UP.slice(0, 20).concat(DOWN_W1.slice(20));
   const UP_W2 = UP.slice(0, 20).concat(DOWN_W2.slice(20));
 
+  // Perfil (olhando para a esquerda). O rosto fica dentro do volume do cabelo;
+  // só a ponta do nariz passa 1px do contorno.
   const LEFT = [
     '................',
-    '.....kk.kk.k....',
-    '....khhkhhkhk...',
-    '...khhHhhhHhhk..',
-    '..khHhhhhhhhHhk.',
-    '..khhhhhhHhhhhk.',
-    '..khshhshhhhHhk.',
-    '.ksssssshhhhhhk.',
-    '.kseessshHhhhhk.',
-    '.ksesssshhhhhk..',
-    '.kSsssSShhHhk...',
-    '..kkSSkkhhkk....',
-    '....kSSpkk......',
-    '....kpppppk.....',
-    '...kllllllk.....',
-    '...kpppkppk.....',
-    '...klllkllk.....',
-    '...kpppkppk.....',
-    '...kllkSsk......',
-    '....kkkbbk......',
-    '.....kbbbk......',
-    '.....kbBbk......',
-    '.....kbbbk......',
-    '....koooOk......',
+    '.....kk.kk.kk...',
+    '....khhkhhkhhk..',
+    '...khHhhhHhhhHk.',
+    '..khhhhhhhhHhhhk',
+    '..khHhhhhhhhhhk.',
+    '..khsHhhhhhhHhhk',
+    '..ksssshhhhhhhk.',
+    '..ksesshhhHhhhhk',
+    '.kssesshhhhhhhk.',
+    '..ksssShhhhhhk..',
+    '...kSSShhhhhk...',
+    '......kSSk......',
+    '.....kpppppk....',
+    '....kllllllPk...',
+    '....kpppkppPk...',
+    '....klllkllPk...',
+    '....kpppkppPk...',
+    '....klSskllPk...',
+    '.....kbbbbbk....',
+    '.....kbbbbbk....',
+    '.....kbBbbbk....',
+    '.....kbbbbbk....',
+    '....koooooOk....',
   ];
   const LEFT_W1 = LEFT.slice(0, 19).concat([
-    '....kkbbbk......',
-    '....kbbbbbk.....',
-    '...kbbk.kbbk....',
-    '...kbk...kbk....',
-    '..kook...kook...',
+    '.....kbbbbbk....',
+    '....kbbkkbbk....',
+    '...kbbk..kbbk...',
+    '...kbk....kbk...',
+    '..kook....kook..',
   ]);
   const LEFT_W2 = LEFT.slice(0, 19).concat([
-    '....kkbbbk......',
-    '.....kbbbk......',
-    '.....kbkbk......',
-    '.....kbkbk......',
-    '....kookook.....',
+    '.....kbbbbbk....',
+    '.....kbbbbbk....',
+    '.....kbbbbk.....',
+    '.....kbbkook....',
+    '....koook.......',
   ]);
 
   function build(rows, flip) {
@@ -194,6 +196,9 @@ window.Sprites = (function () {
     kneel: build(kneelRows()),
     lyingL: build(lyingRows(true)),
     lyingR: build(lyingRows(false)),
+    // busto (reflexo no espelho): cabeça e ombros
+    bust: build(DOWN.slice(0, 18), true),
+    bustBlink: build(closeEyes(DOWN).slice(0, 18), true),
   };
   S.PAL = PAL;
   return S;

@@ -10,6 +10,7 @@
     t: parseFloat(QS.get('t')) || 0,
     nomusic: QS.has('nomusic'),
     hud: QS.has('debug'),
+    creature: QS.has('creature'), // força a criatura no espelho
   };
 
   const screen = document.getElementById('screen');
@@ -68,7 +69,9 @@
   // =====================================================================
   //  ESTADO
   // =====================================================================
-  let state = 'start'; // start -> intro -> gap -> play -> end
+  // O jogo abre direto nas mensagens. ('start' só existe no modo de teste ?skip)
+  let state = DEBUG.skip ? 'start' : 'intro'; // intro -> gap -> play -> end
+  Sound.tryEarly();
   let stateT = 0;
   let paused = false;
   let clock = 0; // relógio de reserva (se a música falhar)
@@ -258,10 +261,14 @@
 
   const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 
-  function tryInteract() {
+  function tryInteract(t) {
     const [vx, vy] = DIRV[player.dir];
     for (const dist of [8, 14, 20, 26]) {
       const f = World.furnitureAt(player.x + vx * dist, player.y - 4 + vy * dist);
+      if (f && f.action === 'mirror') {
+        Mirror.open(t, DEBUG.creature);
+        return;
+      }
       if (f && f.desc) {
         openDialog(f.desc);
         return;
@@ -271,6 +278,15 @@
 
   function updateExplore(dt, t) {
     if (trans) return;
+    if (Mirror.active) {
+      const r = Mirror.update(dt, Input.consumeAction());
+      if (r === 'grabbed') {
+        shake = 5;
+        Input.releaseAll();
+      }
+      return;
+    }
+    const dz = Mirror.dazeK();
     if (dialog) {
       dialog.t += dt;
       if (!dialog.done) typeStep(dialog, dialog.text, dt, 440);
@@ -283,12 +299,17 @@
       return;
     }
     if (Input.consumeAction()) {
-      tryInteract();
-      if (dialog) return;
+      if (dz < 0.4) tryInteract(t);
+      if (dialog || Mirror.active) return;
     }
     const d = Input.dir();
+    // atordoado: anda devagar e meio torto
+    if (dz > 0 && (d.x || d.y)) {
+      d.x += Math.sin(t * 1.9) * 0.45 * dz;
+      d.y += Math.cos(t * 1.4) * 0.3 * dz;
+    }
     // pouco antes da queda o corpo fica pesado
-    const heavy = t > 138 ? Math.max(0.62, 1 - (t - 138) / 12 * 0.38) : 1;
+    const heavy = (t > 138 ? Math.max(0.62, 1 - (t - 138) / 12 * 0.38) : 1) * (1 - 0.45 * dz);
     const sp = C.PLAYER_SPEED * heavy;
     if (d.x || d.y) {
       if (Math.abs(d.x) > Math.abs(d.y) + 0.01) player.dir = d.x > 0 ? 'right' : 'left';
@@ -368,6 +389,7 @@
     if (t >= C.TREMBLE_AT && !trembleStarted) {
       trembleStarted = true;
       dialog = null;
+      Mirror.reset(); // nunca mistura o espelho com a crise
       if (trans) {
         if (trans.next) room = trans.next;
         trans = null;
@@ -472,8 +494,10 @@
         endGame();
         return;
       }
-      if (t < C.TREMBLE_AT) updateExplore(dt, t);
-      else Input.clear();
+      if (t < C.TREMBLE_AT) {
+        updateExplore(dt, t);
+        Mirror.tickDaze(dt);
+      } else Input.clear();
       updateStory(dt, t);
       shake = Math.max(0, shake - dt * 9);
       flash = Math.max(0, flash - dt * 1.2);
@@ -537,10 +561,16 @@
   function renderPlay() {
     const t = lastT;
     const D = despair(t);
+    if (Mirror.active) {
+      Mirror.render(ctx, t, touchUI);
+      drawOverlays(t, D);
+      return;
+    }
+    const dz = Mirror.dazeK();
     const fadeTrans = updateTransitionValue;
     let cam = World.camera(room, player.x, player.y, W, H);
     // tremor de tela
-    const sh = shake + (D > 0.35 ? (D - 0.35) * 2.2 : 0);
+    const sh = shake + (D > 0.35 ? (D - 0.35) * 2.2 : 0) + dz * 1.2;
     if (sh > 0.05) {
       cam = { x: cam.x + Math.round((Math.random() * 2 - 1) * sh), y: cam.y + Math.round((Math.random() * 2 - 1) * sh) };
     }
@@ -566,19 +596,33 @@
     Effects.post(ctx, {
       ambient,
       lights: lightsFor(t, D, cam),
-      desat: Math.min(0.9, D * 1.1) + pre * 0.2,
-      vignette: 0.35 + D * 0.75 + pulse + pre * 0.2,
-      noise: D * 0.11 + (t > C.TREMBLE_AT && t < C.FALL_AT ? 0.04 : 0),
+      desat: Math.min(0.9, D * 1.1 + pre * 0.2 + dz * 0.6),
+      vignette: 0.35 + D * 0.75 + pulse + pre * 0.2 + dz * (0.45 + Math.sin(t * 4) * 0.15),
+      noise: D * 0.11 + (t > C.TREMBLE_AT && t < C.FALL_AT ? 0.04 : 0) + dz * 0.06,
+      wave: dz * 4,
+      waveT: t,
       fade,
       glitch: D > 0.45 ? (D - 0.45) * 0.5 : 0,
       vcx: W / 2 + (target.x - W / 2) * Math.min(1, D * 1.5),
       vcy: H / 2 + (target.y - H / 2) * Math.min(1, D * 1.5),
-      tint: D > 0.5 ? [1 + (D - 0.5) * 0.25, 1 - (D - 0.5) * 0.3, 1 - (D - 0.5) * 0.2] : null,
+      tint: D > 0.5 ? [1 + (D - 0.5) * 0.25, 1 - (D - 0.5) * 0.3, 1 - (D - 0.5) * 0.2]
+        : dz > 0 ? [1 + dz * 0.3, 1 - dz * 0.25, 1 - dz * 0.2] : null,
     });
+    // visão dupla quando atordoado
+    if (dz > 0.02) {
+      const prevA = ctx.globalAlpha;
+      ctx.globalAlpha = 0.38 * dz;
+      ctx.drawImage(buf, Math.round(3 + Math.sin(t * 2.7) * 5 * dz), Math.round(Math.cos(t * 1.9) * 2 * dz));
+      ctx.globalAlpha = prevA;
+    }
     // luzes que "brilham" por cima da escuridão (cidade lá fora)
     World.drawEmissive(ctx, room, cam, t, (1 - fade) * Math.max(0, 1 - D * 1.6));
     if (t >= C.FALL_AT) Effects.drawWords(ctx, D, t, target);
     drawDialog();
+    drawOverlays(t, D);
+  }
+
+  function drawOverlays(t, D) {
     if (paused) {
       ctx.fillStyle = 'rgba(0,0,0,0.75)';
       ctx.fillRect(0, 0, W, H);
@@ -596,18 +640,8 @@
   function renderStart() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
-    const title = 'burned out';
-    Font.draw(ctx, title, (W - Font.measure(title, 2)) / 2, 50, '#cfc8dc', { scale: 2 });
-    const s = 'use fones de ouvido.';
-    Font.draw(ctx, s, (W - Font.measure(s)) / 2, 96, '#6f6a7a');
-    if (touchUI && window.innerHeight > window.innerWidth) {
-      const s2 = '(melhor com o celular deitado)';
-      Font.draw(ctx, s2, (W - Font.measure(s2)) / 2, 108, '#4a4654');
-    }
-    if (Math.floor(stateT * 1.6) % 2 === 0) {
-      const p = touchUI ? 'toque para começar' : 'pressione enter';
-      Font.draw(ctx, p, (W - Font.measure(p)) / 2, 132, '#e8e4f0');
-    }
+    const p = '[teste] enter';
+    Font.draw(ctx, p, (W - Font.measure(p)) / 2, H / 2 - 4, '#3e3a46');
   }
 
   function renderIntro() {
@@ -637,6 +671,15 @@
       if (intro.i === 0) {
         const hint = touchUI ? 'toque para continuar' : 'enter para continuar';
         Font.draw(ctx, hint, (W - Font.measure(hint)) / 2, H - 16, '#3e3a46');
+      }
+    }
+    // primeira mensagem: dica dos fones
+    if (intro.i === 0 && intro.out === 0) {
+      const s = 'use fones de ouvido.';
+      Font.draw(ctx, s, (W - Font.measure(s)) / 2, 14, '#4a4654');
+      if (touchUI && window.innerHeight > window.innerWidth) {
+        const s2 = '(melhor com o celular deitado)';
+        Font.draw(ctx, s2, (W - Font.measure(s2)) / 2, 26, '#36323e');
       }
     }
   }
