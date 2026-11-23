@@ -140,14 +140,14 @@ window.World = (function () {
   add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
   // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
   // e a TV fica na parede que faz fronteira com o meu quarto.
-  // sofá de 3 lugares ocupando todo o lado esquerdo; painel da TV ocupando toda a parede do meu quarto
-  add('rug', 15.5, 4.6, 3.4, 3.8, { solid: false, decor: true });
-  add('sofa', 13, 4, 2, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
-  add('coffee', 16.3, 5.5, 1.6, 1.8);
-  add('tvPanel', 19, 4, 1, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
-  add('plant', 12.05, 7.5, 0.9, 0.95, { desc: 'a planta atrás do sofá. algumas folhas secando.' }); // no vão atrás do sofá
-  add('lamp', 15.15, 4.05, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
+  // sofá de 3 lugares ocupando todo o lado esquerdo; painel da TV ocupando toda a parede do meu quarto.
+  // Sem mesinha no meio: só um corredor estreito entre o sofá e a TV. O abajur fica no canto, atrás do sofá.
+  add('lamp', 13.1, 4.1, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
+  add('sofa', 14, 4, 2.5, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
+  add('rug', 16.6, 4.7, 2.05, 3.6, { solid: false, decor: true });
+  add('tvPanel', 18.75, 4, 1.25, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
   add('window', 15, 3, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
+  add('plant', 12.05, 7.5, 0.9, 0.95, { desc: 'a planta atrás do sofá. algumas folhas secando.' }); // no vão atrás do sofá
   // Suíte
   // Meu quarto (o mais à direita): guarda-roupa à esquerda, cômoda com a janela atrás,
   // cama à direita, cadeira e mesa com computador embaixo, porta no canto inferior esquerdo.
@@ -181,7 +181,7 @@ window.World = (function () {
   const WARM = [1.0, 0.72, 0.42];
   const LIGHTS = {
     sala: [
-      { x: 15.6 * T, y: 4.6 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
+      { x: 13.5 * T, y: 4.5 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
       { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
@@ -900,52 +900,106 @@ window.World = (function () {
     }
   }
 
-  // Cidade vista da varanda (lá embaixo). Coordenadas em pixels do mundo.
-  const STREET_Y = 0.3 * T; // rua lá embaixo
-  const CITY_X0 = -3 * T, CITY_X1 = 15 * T, CITY_Y0 = -6 * T;
-  const buildings = [];
-  const cityLights = [];
-  (function () {
-    const r = rnd(42);
-    for (let i = 0; i < 34; i++) {
-      const bw = Math.round(16 + r() * 34), bh = Math.round(12 + r() * 22);
-      const bx = Math.round(CITY_X0 + r() * (CITY_X1 - CITY_X0)), by = Math.round(CITY_Y0 + r() * (STREET_Y - 14 - CITY_Y0));
-      if (by + bh > STREET_Y - 10) continue;
-      if (bx < 150 + CITY_X0 + 9 && bx + bw > 150 + CITY_X0) continue; // rua vertical
-      const b = { x: bx, y: by, w: bw, h: bh, c: r() < 0.5 ? '#0e1019' : '#13151f' };
-      buildings.push(b);
-      const n = 2 + Math.floor(r() * 5);
-      for (let k = 0; k < n; k++) {
-        cityLights.push({
-          x: bx + 2 + Math.floor(r() * (bw - 4)),
-          y: by + 2 + Math.floor(r() * (bh - 4)),
-          c: r() < 0.7 ? '#e8c47a' : r() < 0.6 ? '#9ab8ec' : '#f0f0e0',
-          p: r() * 10,
-          s: r() < 0.2 ? 0.3 + r() * 0.6 : 0,
-        });
+  // ---------------- Vista da sacada ----------------
+  // De baixo para cima na tela (de perto para longe):
+  //  - perto: os outros prédios do condomínio, mais baixos, vistos de cima (telhado + fachada)
+  //  - meio: o bairro, uma avenida com postes e carros
+  //  - longe: a cidade inteira no horizonte, com o brilho alaranjado das luzes e o céu
+  const VX0 = -5 * T, VX1 = 18 * T;
+  const SKY_TOP = -5 * T;           // topo do céu (acima do que aparece)
+  const HORIZON = -27;              // linha do horizonte
+  const AVENUE = -2;                // avenida do bairro
+  const cityRects = [];             // desenho base (fica escuro com a noite)
+  const cityLights = [];            // pontos que brilham por cima da escuridão
+  const aviation = [];              // luz vermelha piscando no topo das torres
+  const stars = [];
+  (function buildView() {
+    const r = rnd(4242);
+    const rect = (x, y, w, h, c) => cityRects.push([x, y, w, h, c]);
+    const light = (x, y, c, a, s) => cityLights.push({ x, y, c, a: a || 1, s: s || 0, p: r() * 10 });
+    const winColor = () => (r() < 0.72 ? '#e8c47a' : r() < 0.6 ? '#8fb2ec' : '#f2efe0');
+    // céu
+    for (let i = 0; i < 26; i++) stars.push({ x: VX0 + r() * (VX1 - VX0), y: SKY_TOP + r() * (HORIZON - 16 - SKY_TOP), s: r() * 6 });
+    // cidade inteira, lá longe: silhuetas no horizonte
+    for (let x = VX0; x < VX1; ) {
+      const w = 3 + Math.floor(r() * 7);
+      let h = 2 + Math.floor(r() * 7);
+      if (r() < 0.1) h += 6 + Math.floor(r() * 7); // torres
+      rect(x, HORIZON - h, w, h, r() < 0.5 ? '#0b0d18' : '#0e1020');
+      for (let k = 0; k < Math.floor((w * h) / 9); k++) {
+        if (r() < 0.6) light(x + Math.floor(r() * w), HORIZON - 1 - Math.floor(r() * h), winColor(), 0.55);
+      }
+      if (h > 15) aviation.push({ x: x + Math.floor(w / 2), y: HORIZON - h - 1, p: r() * 6 });
+      x += w + (r() < 0.3 ? 1 : 0);
+    }
+    // bairro: três fileiras de prédios, menores quanto mais longe
+    const rows = [
+      { top: HORIZON + 1, roof: 1, face: 3, wmin: 6, wmax: 14 },
+      { top: HORIZON + 6, roof: 2, face: 4, wmin: 8, wmax: 18 },
+      { top: HORIZON + 12, roof: 2, face: 6, wmin: 10, wmax: 26 },
+    ];
+    for (const row of rows) {
+      for (let x = VX0; x < VX1; ) {
+        const w = row.wmin + Math.floor(r() * (row.wmax - row.wmin));
+        const off = Math.floor(r() * 3);
+        rect(x, row.top + off, w, row.roof, '#1a1d2a');
+        rect(x, row.top + off + row.roof, w, row.face, '#10121c');
+        for (let fy = 1; fy < row.face; fy += 2)
+          for (let fx = 1; fx < w - 1; fx += 2) if (r() < 0.22) light(x + fx, row.top + off + row.roof + fy, winColor(), 0.7);
+        x += w + 2 + Math.floor(r() * 4);
       }
     }
+    // avenida
+    rect(VX0, AVENUE - 3, VX1 - VX0, 7, '#0a0b12');
+    for (let x = VX0; x < VX1; x += 9) rect(x, AVENUE, 4, 1, '#24252e');
+    for (let x = VX0 + 4; x < VX1; x += 30) light(x, AVENUE - 4, '#ffcf8a', 1);
+    // chão do condomínio (jardim + caminhos)
+    rect(VX0, AVENUE + 4, VX1 - VX0, 40, '#0c1510');
+    rect(VX0, AVENUE + 4, VX1 - VX0, 2, '#14161e');
+    // prédios do condomínio, mais baixos, bem perto
+    const near = [
+      { x: -62, w: 74, roof: 6, rh: 9 },
+      { x: 34, w: 96, roof: 2, rh: 9 },
+      { x: 166, w: 92, roof: 7, rh: 9 },
+    ];
+    for (const b of near) {
+      const fy = b.roof + b.rh;
+      rect(b.x, b.roof, b.w, b.rh, '#1e212c'); // telhado
+      rect(b.x, b.roof, b.w, 1, '#2c303c');
+      rect(b.x, b.roof + b.rh - 1, b.w, 1, '#14161e');
+      rect(b.x + 6, b.roof + 2, 10, 5, '#2a2d38'); // caixa d'água
+      rect(b.x + 7, b.roof + 3, 8, 1, '#343844');
+      rect(b.x + b.w - 14, b.roof + 3, 5, 3, '#262a34'); // ar-condicionado
+      rect(b.x, fy, b.w, 34 - fy, '#151822'); // fachada
+      for (let y = fy + 2; y < 32; y += 6) {
+        rect(b.x, y + 4, b.w, 1, '#1d202b'); // sacadas
+        for (let x = b.x + 3; x < b.x + b.w - 4; x += 6) {
+          rect(x, y, 3, 3, '#0d0f16');
+          if (r() < 0.3) light(x + Math.floor(r() * 3), y + 1, winColor(), 0.9);
+        }
+      }
+    }
+    // árvores e postes no jardim entre os prédios
+    for (const [x, y] of [[18, 10], [26, 22], [140, 6], [150, 18], [24, 2]]) {
+      rect(x - 4, y - 3, 8, 6, '#10261a');
+      rect(x - 3, y - 4, 6, 8, '#10261a');
+      rect(x - 2, y - 2, 2, 2, '#1a3a26');
+    }
+    for (const [x, y] of [[30, 14], [145, 26], [16, 28]]) light(x, y, '#ffd8a0', 1);
+    // piscina do condomínio
+    rect(134, 22, 26, 10, '#16323e');
+    rect(135, 23, 24, 8, '#1d4656');
   })();
 
   function drawCity(ctx) {
-    const x0 = OX + CITY_X0, x1 = OX + CITY_X1;
-    const y0 = OY + CITY_Y0 - 2 * T, y1 = OY + 2 * T + 6;
-    const sy = OY + STREET_Y;
-    R(ctx, x0, y0, x1 - x0, y1 - y0, '#07080f');
-    // ruas
-    R(ctx, x0, sy - 6, x1 - x0, 13, '#10121b');
-    R(ctx, x0, sy - 7, x1 - x0, 1, '#191b26');
-    R(ctx, x0, sy + 7, x1 - x0, 1, '#191b26');
-    R(ctx, x0 + 150, y0, 9, sy - y0, '#0f111a');
-    for (let i = x0; i < x1; i += 10) R(ctx, i, sy, 4, 1, '#24262f');
-    for (const b of buildings) {
-      R(ctx, OX + b.x, OY + b.y, b.w, b.h, b.c);
-      R(ctx, OX + b.x, OY + b.y, b.w, 1, '#1c1f2c');
-      R(ctx, OX + b.x + b.w - 1, OY + b.y, 1, b.h, '#0a0b12');
+    // céu (degradê) + cidade
+    for (let y = SKY_TOP; y < HORIZON + 2; y += 2) {
+      const k = (y - SKY_TOP) / (HORIZON - SKY_TOP);
+      const rr = Math.round(6 + 28 * k * k), gg = Math.round(7 + 12 * k * k), bb = Math.round(18 + 26 * k);
+      R(ctx, OX + VX0, OY + y, VX1 - VX0, 2, `rgb(${rr},${gg},${bb})`);
     }
-    // calçada e jardim do prédio, logo abaixo da varanda
-    R(ctx, x0, sy + 8, x1 - x0, y1 - sy - 8, '#0b0c14');
-    for (let i = x0 + 4; i < x1; i += 26) R(ctx, i, sy + 13, 7, 5, '#0e1a12');
+    R(ctx, OX + VX0, OY + HORIZON, VX1 - VX0, 2 * T + 8 - HORIZON, '#0b0d16');
+    for (const [x, y, w, h, c] of cityRects) R(ctx, OX + x, OY + y, w, h, c);
   }
 
   let full = null;
@@ -1018,37 +1072,59 @@ window.World = (function () {
     if (roomId !== 'varanda') return;
     const limit = 2 * T + 1 - cam.y; // só acima do parapeito
     const prev = ctx.globalAlpha;
+    const put = (wx, wy, c, a) => {
+      const sx = Math.round(wx - cam.x), sy = Math.round(wy - cam.y);
+      if (sy >= limit || sy < 0 || sx < 0 || sx >= C.W || hidden(sx, sy)) return;
+      ctx.globalAlpha = prev * k * a;
+      R(ctx, sx, sy, 1, 1, c);
+    };
+    // brilho alaranjado da cidade no horizonte
+    for (let i = 0; i < 14; i++) {
+      const y = HORIZON - 16 + i * 1.5;
+      const sy = Math.round(y - cam.y);
+      if (sy < 0 || sy >= limit) continue;
+      ctx.globalAlpha = prev * k * (0.02 + (i / 14) * 0.1);
+      R(ctx, 0, sy, C.W, 2, '#e08a5a');
+    }
+    // lua
+    const mx = Math.round(13.2 * T - cam.x), my = Math.round(HORIZON - 19 - cam.y);
+    if (my > -6 && my < limit - 6) {
+      ctx.globalAlpha = prev * k * 0.9;
+      R(ctx, mx - 2, my - 3, 4, 7, '#e8e6dc');
+      R(ctx, mx - 3, my - 2, 6, 5, '#e8e6dc');
+      R(ctx, mx, my - 3, 3, 6, '#0b0d18'); // minguante
+    }
+    for (const st of stars) if (Math.sin(time * 0.7 + st.s) > -0.3) put(st.x, st.y, '#bcb8d8', 0.6);
     for (const L of cityLights) {
       if (L.s && Math.sin(time * L.s + L.p) < 0.2) continue;
-      const sx = Math.round(L.x - cam.x), sy = Math.round(L.y - cam.y);
-      if (sy >= limit || sy < 0 || hidden(sx, sy)) continue;
-      ctx.globalAlpha = prev * k * 0.85;
-      R(ctx, sx, sy, 1, 1, L.c);
+      put(L.x, L.y, L.c, 0.85 * L.a);
     }
-    // postes da rua
-    const streetY = STREET_Y - 8 - cam.y;
-    for (let x = -3 * T + 6; x < 15 * T; x += 34) {
-      const sx = Math.round(x - cam.x);
-      ctx.globalAlpha = prev * k * 0.25;
-      R(ctx, sx - 2, streetY - 2, 5, 5, '#f0a04a');
-      ctx.globalAlpha = prev * k;
-      R(ctx, sx, streetY, 1, 1, '#ffd08a');
+    // luz vermelha das torres (pisca devagar)
+    for (const a of aviation) if (Math.sin(time * 2 + a.p) > 0.4) put(a.x, a.y, '#ff3030', 1);
+    // halo dos postes da avenida
+    for (let x = VX0 + 4; x < VX1; x += 30) {
+      const sx = Math.round(x - cam.x), sy = Math.round(AVENUE - 4 - cam.y);
+      if (sy < 0 || sy >= limit) continue;
+      ctx.globalAlpha = prev * k * 0.2;
+      R(ctx, sx - 2, sy - 1, 5, 4, '#f0a04a');
     }
-    // carros passando lá embaixo
-    for (let i = 0; i < 3; i++) {
-      const span = 20 * T;
+    // carros na avenida
+    for (let i = 0; i < 4; i++) {
+      const span = VX1 - VX0;
       const dir = i % 2 ? -1 : 1;
-      const speed = 9 + i * 4;
-      let x = ((time * speed + i * 97) % span + span) % span - 3 * T;
-      if (dir < 0) x = 17 * T - x - 3 * T;
-      const y = STREET_Y - 4 + (dir < 0 ? 5 : 0) - cam.y;
-      const sx = Math.round(x - cam.x);
-      ctx.globalAlpha = prev * k;
-      R(ctx, sx, y, 1, 1, dir > 0 ? '#fff4d8' : '#e0303a');
-      R(ctx, sx, y + 2, 1, 1, dir > 0 ? '#fff4d8' : '#e0303a');
-      ctx.globalAlpha = prev * k * 0.6;
-      R(ctx, sx - dir * 5, y, 1, 1, dir > 0 ? '#e0303a' : '#fff4d8');
-      R(ctx, sx - dir * 5, y + 2, 1, 1, dir > 0 ? '#e0303a' : '#fff4d8');
+      let x = ((time * (10 + i * 3) + i * 83) % span + span) % span + VX0;
+      if (dir < 0) x = VX1 - (x - VX0);
+      const y = AVENUE - 2 + (dir < 0 ? 3 : 0);
+      put(x, y, dir > 0 ? '#fff4d8' : '#e0303a', 1);
+      put(x - dir * 4, y, dir > 0 ? '#e0303a' : '#fff4d8', 0.5);
+    }
+    // reflexo da piscina
+    const px = Math.round(135 - cam.x), py = Math.round(23 - cam.y);
+    if (py < limit) {
+      ctx.globalAlpha = prev * k * 0.35;
+      R(ctx, px, py, 24, Math.min(8, limit - py), '#3aa6c8');
+      ctx.globalAlpha = prev * k * 0.5;
+      R(ctx, px + 3 + Math.round(Math.sin(time) * 2), py + 3, 6, 1, '#9fe6ff');
     }
     ctx.globalAlpha = prev;
   }
