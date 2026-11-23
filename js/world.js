@@ -13,7 +13,7 @@ window.World = (function () {
     '#...........#########.......#  ',
     '#...........#.......#.......#  ',
     '#...........#.......#.......#  ',
-    '#oop##poDDoo#.......#.......#  ',
+    '#oop##pooooo#.......#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
@@ -121,7 +121,10 @@ window.World = (function () {
   }
   // Varanda
   add('railing', 1, 2, 11, 1, { solid: false, decor: true, desc: 'a cidade continua acordada lá fora.' });
-  add('tanque', 1, 3, 1, 1.5, { desc: 'roupas esquecidas no varal.' });
+  // a bancada de mármore preto da cozinha continua pelo lado esquerdo até o fim da varanda
+  add('tanque', 1, 3, 1, 2, { desc: 'o tanque. roupas esquecidas no varal.' });
+  add('counter', 1, 5, 1, 1);
+  add('counter', 1, 6, 1, 1);
   add('planter', 4.4, 5.15, 2.2, 0.85, { desc: 'as plantas precisam de água.' });
   add('balconyTable', 8.7, 3.15, 2.3, 1.75, { desc: 'duas cadeiras vazias.' });
   add('pot', 11.1, 3.1, 0.85, 0.85);
@@ -420,11 +423,17 @@ window.World = (function () {
         break;
       }
       case 'tanque':
-        R(ctx, x + 1, y + 1, w - 1, h - 1, sh);
-        R(ctx, x, y, w - 1, h - 1, '#d9dade');
-        R(ctx, x + 2, y + 3, w - 5, h - 7, '#9ea4ad');
-        R(ctx, x + 3, y + 4, w - 7, h - 10, '#b9bec6');
-        R(ctx, x + 1, y + 1, 3, 2, '#8a8f98');
+        // tanque embutido na bancada de mármore preto
+        R(ctx, x, y, w, h, '#34333b');
+        R(ctx, x + w - 3, y, 3, h, '#25242b');
+        R(ctx, x + w - 3, y, 1, h, '#4a4955');
+        R(ctx, x + 3, y + 5, 1, 1, '#4b4a56');
+        R(ctx, x + 8, y + h - 5, 1, 1, '#4b4a56');
+        R(ctx, x + 1, y + 3, w - 4, h - 7, '#d9dade');
+        R(ctx, x + 2, y + 5, w - 6, h - 11, '#9ea4ad');
+        R(ctx, x + 3, y + 6, w - 8, h - 14, '#b9bec6');
+        R(ctx, x + 2, y + 1, 3, 2, '#8a8f98'); // torneira
+        R(ctx, x + 3, y + h - 6, w - 7, 1, '#7a808a'); // ralo/escorredor
         break;
       case 'planter': {
         R(ctx, x, y + 2, w, h - 2, '#5a4636');
@@ -1042,6 +1051,19 @@ window.World = (function () {
       for (let x = 0; x < COLS; x++) {
         const c = tileAt(x, y);
         if (isFloor(c)) drawFloorTile(ctx, x, y, floorStyle(x, y), rand);
+        else if (c === 'o' || c === 'p') {
+          // passagem aberta: mesmo piso, só um trilho fininho marcando a divisa
+          const px = OX + x * T, py = OY + y * T;
+          drawFloorTile(ctx, x, y, 'ceramic', rand);
+          let oa = 0, ob = T;
+          if (c === 'p') {
+            const [a, b] = PARTIAL[x + ',' + y];
+            oa = a === 0 ? b : 0;
+            ob = a === 0 ? T : a;
+          }
+          R(ctx, px + oa, py + 7, ob - oa, 1, '#9b97a3');
+          R(ctx, px + oa, py + 8, ob - oa, 1, '#c7c3cc');
+        }
       }
     // móveis "de chão" primeiro (tapetes), depois o resto
     for (const f of F) if (f.decor) drawFurniture(ctx, f);
@@ -1054,24 +1076,14 @@ window.World = (function () {
         if (c === '#') drawWallTile(ctx, x, y);
         else if (c === 'D') drawDoorTile(ctx, x, y);
         else if (c === 'p') {
-          // parede parcial: piso + trilho na parte aberta, parede só no pedaço sólido
+          // parede parcial: parede só no pedaço sólido (o piso já foi desenhado)
           const [a, b] = PARTIAL[x + ',' + y];
           const px = OX + x * T, py = OY + y * T;
-          drawFloorTile(ctx, x, y, 'ceramic', rand);
-          const oa = a === 0 ? b : 0, ob = a === 0 ? T : a;
-          R(ctx, px + oa, py + 7, ob - oa, 1, '#9b97a3');
-          R(ctx, px + oa, py + 8, ob - oa, 1, '#c7c3cc');
           R(ctx, px + a, py, b - a, T, '#3a3241');
           if (isFloor(tileAt(x, y + 1))) { R(ctx, px + a, py + T - 3, b - a, 3, '#5a4f63'); R(ctx, px + a, py + T - 1, b - a, 1, '#2a2430'); }
           if (isFloor(tileAt(x, y - 1))) R(ctx, px + a, py, b - a, 1, '#52485b');
           if (a > 0) R(ctx, px + a, py, 1, T, '#52485b');
           if (b < T) R(ctx, px + b - 1, py, 1, T, '#52485b');
-        }
-        else if (c === 'o') {
-          // passagem aberta: mesmo piso, só um trilho fininho marcando a divisa
-          drawFloorTile(ctx, x, y, 'ceramic', rand);
-          R(ctx, OX + x * T, OY + y * T + 7, T, 1, '#9b97a3');
-          R(ctx, OX + x * T, OY + y * T + 8, T, 1, '#c7c3cc');
         }
       }
 
