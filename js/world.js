@@ -553,18 +553,19 @@ window.World = (function () {
         R(ctx, x + w - 6, ty, 3, th, '#0c0c10'); // TV
         R(ctx, x + w - 6, ty, 1, th, '#33333e');
         R(ctx, x + w - 6, ty + th - 2, 1, 1, '#c02020'); // ledzinho de standby
-        // impressora em cima do rack
-        R(ctx, x + 3, y + 3, 12, 11, '#bfc1c6');
-        R(ctx, x + 3, y + 3, 12, 1, '#dcdee2');
-        R(ctx, x + 4, y + 5, 10, 2, '#4a4c54'); // abertura do papel
+        // impressora preta em cima do rack
+        R(ctx, x + 3, y + 3, 12, 11, '#1b1b21');
+        R(ctx, x + 3, y + 3, 12, 1, '#36363f');
+        R(ctx, x + 3, y + 3, 1, 11, '#2a2a32');
+        R(ctx, x + 4, y + 5, 10, 2, '#08080b'); // abertura do papel
         R(ctx, x + 5, y + 1, 8, 3, '#f2f2ee'); // folha saindo
         R(ctx, x + 12, y + 11, 2, 1, '#3a8a4a');
-        // modem wi-fi com antenas
-        R(ctx, x + 4, y + h - 12, 10, 6, '#18181e');
-        R(ctx, x + 4, y + h - 12, 10, 1, '#2c2c36');
-        R(ctx, x + 5, y + h - 15, 1, 3, '#2c2c36');
-        R(ctx, x + 12, y + h - 15, 1, 3, '#2c2c36');
-        for (let i = 0; i < 3; i++) R(ctx, x + 6 + i * 2, y + h - 9, 1, 1, '#2a6a3a');
+        // modem wi-fi do lado da impressora, com antenas
+        R(ctx, x + 4, y + 17, 10, 6, '#18181e');
+        R(ctx, x + 4, y + 17, 10, 1, '#2c2c36');
+        R(ctx, x + 5, y + 15, 1, 2, '#2c2c36');
+        R(ctx, x + 12, y + 15, 1, 2, '#2c2c36');
+        for (let i = 0; i < 3; i++) R(ctx, x + 6 + i * 2, y + 20, 1, 1, '#2a6a3a');
         break;
       }
       case 'plant': {
@@ -1071,7 +1072,7 @@ window.World = (function () {
       const prev = ctx.globalAlpha;
       for (let i = 0; i < 3; i++) {
         if (Math.sin(time * (3 + i * 2.3) + i) < -0.2) continue;
-        const lx = Math.round(18.5 * T + 6 + i * 2 - cam.x), ly = Math.round(9 * T - 9 - cam.y);
+        const lx = Math.round(18.5 * T + 6 + i * 2 - cam.x), ly = Math.round(4 * T + 20 - cam.y);
         if (hidden(lx, ly)) continue;
         ctx.globalAlpha = prev * k;
         R(ctx, lx, ly, 1, 1, '#4cff8a');
