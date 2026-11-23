@@ -5,6 +5,7 @@ window.World = (function () {
 
   // '#' parede   ' ' fora da casa   '.' piso frio   ',' piso de madeira   'D' porta
   // 'o' passagem aberta (sem parede): dá para passar, mas marca a troca de cômodo
+  // 'p' parede parcial: só um pedaço do tile é parede (ver PARTIAL), o resto é passagem
   const MAP = [
     '                               ',
     '                    #########  ',
@@ -12,7 +13,7 @@ window.World = (function () {
     '#...........#########.......#  ',
     '#...........#.......#.......#  ',
     '#...........#.......#.......#  ',
-    '#ooo#ooooooo#.......#.......#  ',
+    '#oop##poDDoo#.......#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
@@ -29,6 +30,9 @@ window.World = (function () {
     '  #############################',
   ];
   const COLS = MAP[0].length;
+  // paredes parciais [início, fim] em pixels dentro do tile — seguem as marcações da planta:
+  // a parede entre a cozinha e a varanda fica a partir de x=55, e a da sala vai até x=100
+  const PARTIAL = { '3,6': [7, 16], '6,6': [0, 4] };
   const ROWS = MAP.length;
   const PAD = 7; // margem (em tiles) dos canvases pré-renderizados
   const OX = PAD * T;
@@ -208,7 +212,14 @@ window.World = (function () {
     const tx0 = Math.floor(x0 / T), tx1 = Math.floor((x1 - 0.001) / T);
     const ty0 = Math.floor(y0 / T), ty1 = Math.floor((y1 - 0.001) / T);
     for (let ty = ty0; ty <= ty1; ty++)
-      for (let tx = tx0; tx <= tx1; tx++) if (isSolidTile(tileAt(tx, ty))) return true;
+      for (let tx = tx0; tx <= tx1; tx++) {
+        const c = tileAt(tx, ty);
+        if (isSolidTile(c)) return true;
+        if (c === 'p') {
+          const [a, b] = PARTIAL[tx + ',' + ty];
+          if (x1 > tx * T + a && x0 < tx * T + b) return true;
+        }
+      }
     for (const f of F) {
       if (!f.solid) continue;
       const fx = f.x * T, fy = f.y * T, fw = f.w * T, fh = f.h * T;
@@ -371,6 +382,10 @@ window.World = (function () {
     const px = OX + x * T, py = OY + y * T;
     ctx.fillStyle = 'rgba(10,6,20,0.30)';
     if (tileAt(x, y - 1) === '#') ctx.fillRect(px, py, T, 3);
+    if (tileAt(x, y - 1) === 'p') {
+      const [a, b] = PARTIAL[x + ',' + (y - 1)];
+      ctx.fillRect(px + a, py, b - a, 3);
+    }
     ctx.fillStyle = 'rgba(10,6,20,0.16)';
     if (tileAt(x - 1, y) === '#') ctx.fillRect(px, py, 2, T);
     if (tileAt(x + 1, y) === '#') ctx.fillRect(px + T - 1, py, 1, T);
@@ -1038,6 +1053,20 @@ window.World = (function () {
         const c = tileAt(x, y);
         if (c === '#') drawWallTile(ctx, x, y);
         else if (c === 'D') drawDoorTile(ctx, x, y);
+        else if (c === 'p') {
+          // parede parcial: piso + trilho na parte aberta, parede só no pedaço sólido
+          const [a, b] = PARTIAL[x + ',' + y];
+          const px = OX + x * T, py = OY + y * T;
+          drawFloorTile(ctx, x, y, 'ceramic', rand);
+          const oa = a === 0 ? b : 0, ob = a === 0 ? T : a;
+          R(ctx, px + oa, py + 7, ob - oa, 1, '#9b97a3');
+          R(ctx, px + oa, py + 8, ob - oa, 1, '#c7c3cc');
+          R(ctx, px + a, py, b - a, T, '#3a3241');
+          if (isFloor(tileAt(x, y + 1))) { R(ctx, px + a, py + T - 3, b - a, 3, '#5a4f63'); R(ctx, px + a, py + T - 1, b - a, 1, '#2a2430'); }
+          if (isFloor(tileAt(x, y - 1))) R(ctx, px + a, py, b - a, 1, '#52485b');
+          if (a > 0) R(ctx, px + a, py, 1, T, '#52485b');
+          if (b < T) R(ctx, px + b - 1, py, 1, T, '#52485b');
+        }
         else if (c === 'o') {
           // passagem aberta: mesmo piso, só um trilho fininho marcando a divisa
           drawFloorTile(ctx, x, y, 'ceramic', rand);
