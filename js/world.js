@@ -948,14 +948,17 @@ window.World = (function () {
   }
 
   // Pontos de luz da cidade (desenhados DEPOIS da escuridão, para brilhar)
-  function drawEmissive(ctx, roomId, cam, time, k) {
+  // occluded(x, y) diz se o menino está na frente daquele pixel da tela
+  function drawEmissive(ctx, roomId, cam, time, k, occluded) {
     if (k <= 0.02) return;
+    const hidden = (x, y) => occluded && occluded(x, y);
     if (roomId === 'meu_quarto') {
       // luzinha de notificação piscando no celular em cima da cômoda
-      if (Math.floor(time * 1.25) % 2 === 0) {
+      const lx = Math.round(23 * T + 19 - cam.x), ly = Math.round(2 * T + 4 - cam.y);
+      if (Math.floor(time * 1.25) % 2 === 0 && !hidden(lx, ly)) {
         const prev = ctx.globalAlpha;
         ctx.globalAlpha = prev * k;
-        R(ctx, Math.round(23 * T + 19 - cam.x), Math.round(2 * T + 4 - cam.y), 1, 1, '#4cff8a');
+        R(ctx, lx, ly, 1, 1, '#4cff8a');
         ctx.globalAlpha = prev;
       }
       return;
@@ -966,7 +969,7 @@ window.World = (function () {
     for (const L of cityLights) {
       if (L.s && Math.sin(time * L.s + L.p) < 0.2) continue;
       const sx = Math.round(L.x - cam.x), sy = Math.round(L.y - cam.y);
-      if (sy >= limit || sy < 0) continue;
+      if (sy >= limit || sy < 0 || hidden(sx, sy)) continue;
       ctx.globalAlpha = prev * k * 0.85;
       R(ctx, sx, sy, 1, 1, L.c);
     }

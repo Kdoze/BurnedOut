@@ -11,6 +11,7 @@
     nomusic: QS.has('nomusic'),
     hud: QS.has('debug'),
     creature: QS.has('creature'), // força a criatura no espelho
+    apparition: QS.has('apparition'), // força a aparição em toda troca de cômodo
   };
 
   const screen = document.getElementById('screen');
@@ -357,6 +358,8 @@
         room = trans.next;
         const [vx, vy] = DIRV[player.dir];
         for (let i = 0; i < 6; i++) if (free(player.x + vx, player.y + vy)) { player.x += vx; player.y += vy; }
+        Apparition.clear();
+        Apparition.trySpawn(room, player, lastT, DEBUG.apparition);
         trans = { phase: 'in', t: 0 };
         return 1;
       }
@@ -408,6 +411,7 @@
       dialog = null;
       Mirror.reset(); // nunca mistura o espelho com a crise
       Phone.close();
+      Apparition.clear();
       if (trans) {
         if (trans.next) room = trans.next;
         trans = null;
@@ -525,6 +529,7 @@
       if (t < C.TREMBLE_AT) {
         updateExplore(dt, t);
         Mirror.tickDaze(dt);
+        Apparition.update(dt, room);
       } else Input.clear();
       updateStory(dt, t);
       shake = Math.max(0, shake - dt * 9);
@@ -555,6 +560,22 @@
   // =====================================================================
   //  RENDER
   // =====================================================================
+  // máscara de transparência dos sprites (para luzes não "furarem" o personagem)
+  const alphaMasks = new WeakMap();
+  let lastSprite = null;
+  function playerCovers(x, y) {
+    const s = lastSprite;
+    if (!s) return false;
+    const lx = x - s.sx, ly = y - s.sy;
+    if (lx < 0 || ly < 0 || lx >= s.img.width || ly >= s.img.height) return false;
+    let m = alphaMasks.get(s.img);
+    if (!m) {
+      m = s.img.getContext('2d').getImageData(0, 0, s.img.width, s.img.height).data;
+      alphaMasks.set(s.img, m);
+    }
+    return m[(ly * s.img.width + lx) * 4 + 3] > 0;
+  }
+
   function drawPlayer(cam, t, D) {
     let img, ox, oy;
     let jx = 0, jy = 0;
@@ -585,6 +606,7 @@
     if (t >= C.FALL_AT) ctx.fillRect(sx + 1, sy + 14, 22, 2);
     else ctx.fillRect(sx + 3, sy + 22, 10, 2);
     ctx.drawImage(img, sx, sy);
+    lastSprite = { img, sx, sy };
   }
 
   function renderPlay() {
@@ -606,6 +628,7 @@
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
     World.draw(ctx, room, cam, t, W, H);
+    Apparition.drawBody(ctx, cam, t);
     drawPlayer(cam, t, D);
 
     // luz
@@ -623,9 +646,13 @@
     fade = Math.max(fade, Mirror.returnFade);
     const target = screenPos();
     Effects.drawTentacles(D, t, target);
+    const app = Apparition.postParams(cam, t);
+    const lights = lightsFor(t, D, cam);
+    if (app) lights.push(app.light);
     Effects.post(ctx, {
       ambient,
-      lights: lightsFor(t, D, cam),
+      lights,
+      swirl: app ? app.swirl : null,
       desat: Math.min(0.9, D * 1.1 + pre * 0.2 + dz * 0.6),
       vignette: 0.35 + D * 0.75 + pulse + pre * 0.2 + dz * (0.45 + Math.sin(t * 4) * 0.15),
       noise: D * 0.11 + (t > C.TREMBLE_AT && t < C.FALL_AT ? 0.04 : 0) + dz * 0.06,
@@ -649,7 +676,8 @@
       ctx.globalAlpha = prevA;
     }
     // luzes que "brilham" por cima da escuridão (cidade lá fora)
-    World.drawEmissive(ctx, room, cam, t, (1 - fade) * Math.max(0, 1 - D * 1.6));
+    World.drawEmissive(ctx, room, cam, t, (1 - fade) * Math.max(0, 1 - D * 1.6), playerCovers);
+    Apparition.drawEye(ctx, cam, player, t, 1 - fade);
     if (t >= C.FALL_AT) Effects.drawWords(ctx, D, t, target);
     drawDialog();
     if (Phone.active) Phone.render(ctx, t, touchUI);

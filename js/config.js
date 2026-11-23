@@ -23,6 +23,14 @@ window.CONFIG = {
   PHONE_NOTIFICATION: '46 mensagens de 5 conversas',
   PHONE_UNREAD: 46,
   PHONE_CHAT_BLOCKED: 'não consigo abrir agora.',
+  // Música parada no app (não dá pra despausar)
+  PHONE_SONG: {
+    title: 'Sweater Weather',
+    artist: 'The Neighbourhood',
+    pos: 113, // parada em 1:53
+    dur: 240,
+    blocked: 'cansado demais para ouvir agora.',
+  },
   PHONE_NOTE: ['lembretes:', '- terminar a parte do tcc', '- responder o pessoal', '- tentar dormir cedo hoje'],
   // Conversas do WhatsApp (por enquanto nenhuma abre)
   PHONE_CHATS: [
@@ -37,6 +45,9 @@ window.CONFIG = {
     { name: 'TCC - COMPUTAÇÃO', initial: 'T', preview: 'Você: tem q esperar sair a parte de conclusão e resumo', sent: true, read: false, color: '#c8b8f0' },
     { name: 'Pai', heart: '#e0404a', preview: 'bom dia campeao', sent: true, read: false, color: '#5a7a6a' },
   ],
+
+  // Aparição: chance da criatura do espelho surgir longe dele ao entrar/sair de um cômodo
+  APPARITION_CHANCE: 0.03,
 
   // Espelho do banheiro
   MIRROR_CREATURE_CHANCE: 0.10, // 10% de chance da criatura aparecer atrás dele

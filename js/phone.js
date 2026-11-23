@@ -25,7 +25,7 @@ window.Phone = (function () {
   let t = 0;
   const nav = { x: 0, y: 0, rep: 0 };
   const state = {
-    liked: false,
+    liked: true,
     alarms: [{ h: '06:30', on: false }, { h: '07:00', on: true }, { h: '07:10', on: true }],
     settings: [
       { n: 'Wi-Fi', on: true },
@@ -139,8 +139,7 @@ window.Phone = (function () {
         break;
       case 'musica':
         if (sel === 4) { state.liked = !state.liked; Sound.bip(state.liked ? 660 : 440); }
-        else if (sel === 2) say('deixa tocar.');
-        else say('não quero mudar de música.');
+        else say(C.PHONE_SONG.blocked); // não dá pra despausar nem trocar
         break;
       case 'fotos':
         say('não quero ver isso agora.');
@@ -401,28 +400,31 @@ window.Phone = (function () {
   }
 
   function drawMusic(ctx, songT) {
-    R(ctx, SX, SY, SW, SH, '#18121f');
+    const song = C.PHONE_SONG;
+    R(ctx, SX, SY, SW, SH, '#121214');
     statusBar(ctx, songT);
-    header(ctx, 'Música', '#18121f', '#e8e4f0');
-    // capa
+    header(ctx, 'Música', '#121214', '#e8e4f0');
+    // capa em preto e branco (abstrata)
     const cx = SX + 18, cy = SY + 26, cs = SW - 36;
-    for (let y = 0; y < cs; y++) R(ctx, cx, cy + y, cs, 1, `rgb(${40 + y},${20 + y / 3},${70 + y / 2})`);
-    disc(ctx, cx + cs / 2, cy + cs / 2 - 6, 9, '#0d0a12');
-    R(ctx, cx + cs / 2 - 10, cy + cs / 2 + 4, 20, 20, '#0d0a12');
-    disc(ctx, cx + cs / 2 + 2, cy + cs / 2 - 8, 1, '#efece4');
+    for (let y = 0; y < cs; y++) {
+      const v = Math.round(18 + (y / cs) * 70);
+      R(ctx, cx, cy + y, cs, 1, `rgb(${v},${v},${v})`);
+    }
+    for (let i = 0; i < 40; i++) R(ctx, cx + ((i * 37) % cs), cy + ((i * 53) % cs), 1, 1, i % 2 ? '#bdbdbd' : '#6a6a6a');
+    disc(ctx, cx + cs / 2, cy + cs / 2 + 6, 10, '#0a0a0a');
+    R(ctx, cx + cs / 2 - 14, cy + cs - 10, 28, 10, '#0a0a0a');
     const ty = cy + cs + 5;
-    txt(ctx, 'Forgive Yourself', SX + 8, ty, '#f0ecf8');
-    txt(ctx, '(memory ver.)', SX + 8, ty + 8, '#9a92b0');
-    // progresso sincronizado com a música de verdade
-    const dur = Sound.musicDuration();
-    const k = Math.max(0, Math.min(1, (songT || 0) / dur));
-    R(ctx, SX + 8, ty + 20, SW - 16, 1, '#4a4058');
+    txt(ctx, Font.fitSmall(song.title, SW - 16), SX + 8, ty, '#f0ecf8');
+    txt(ctx, Font.fitSmall(song.artist, SW - 16), SX + 8, ty + 8, '#9a9aa6');
+    // progresso parado (pausado)
+    const k = Math.max(0, Math.min(1, song.pos / song.dur));
+    R(ctx, SX + 8, ty + 20, SW - 16, 1, '#4a4a52');
     R(ctx, SX + 8, ty + 20, (SW - 16) * k, 1, '#e8e4f0');
     disc(ctx, SX + 8 + (SW - 16) * k, ty + 20, 1, '#ffffff');
     const fm = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-    txt(ctx, fm(songT || 0), SX + 8, ty + 24, '#9a92b0');
-    txt(ctx, fm(dur), SX + SW - 8 - tw(fm(dur)), ty + 24, '#9a92b0');
-    // botões: anterior, pausa, próximo, curtir
+    txt(ctx, fm(song.pos), SX + 8, ty + 24, '#9a9aa6');
+    txt(ctx, fm(song.dur), SX + SW - 8 - tw(fm(song.dur)), ty + 24, '#9a9aa6');
+    // botões: anterior, play (pausado), próximo, curtir
     const by = ty + 36;
     const bxs = [SX + 18, SX + SW / 2 - 4, SX + SW - 26, SX + SW - 12];
     bxs.forEach((bx, i) => {
@@ -431,13 +433,14 @@ window.Phone = (function () {
     // ⏮
     R(ctx, bxs[0], by, 1, 7, '#e8e4f0');
     for (let i = 0; i < 4; i++) R(ctx, bxs[0] + 5 - i, by + i, 1 + i, 7 - i * 2, '#e8e4f0');
-    // ⏸
-    R(ctx, bxs[1], by, 2, 8, '#ffffff'); R(ctx, bxs[1] + 5, by, 2, 8, '#ffffff');
+    // ▶ (está pausada)
+    for (let i = 0; i < 5; i++) R(ctx, bxs[1] + i, by + i * 0.5, 1, 8 - i, '#ffffff');
     // ⏭
     for (let i = 0; i < 4; i++) R(ctx, bxs[2] + i, by + i, 1, 7 - i * 2, '#e8e4f0');
     R(ctx, bxs[2] + 5, by, 1, 7, '#e8e4f0');
     // curtir
     heart(ctx, bxs[3], by + 1, state.liked ? '#e84a6a' : '#6a627a');
+    txt(ctx, 'pausado', SX + (SW - tw('pausado')) / 2, by + 14, '#5e5e68');
   }
 
   function drawPhotos(ctx, songT) {

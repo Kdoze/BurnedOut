@@ -36,7 +36,7 @@ window.Effects = (function () {
     const ar = p.ambient[0], ag = p.ambient[1], ab = p.ambient[2];
     lr.fill(ar); lg.fill(ag); lb.fill(ab);
     for (const L of p.lights) {
-      if (L.i <= 0.001) continue;
+      if (Math.abs(L.i) <= 0.001) continue; // luz negativa = escurece
       const r = L.r, r2 = r * r;
       const x0 = Math.max(0, Math.floor(L.x - r)), x1 = Math.min(W - 1, Math.ceil(L.x + r));
       const y0 = Math.max(0, Math.floor(L.y - r)), y1 = Math.min(H - 1, Math.ceil(L.y + r));
@@ -98,6 +98,26 @@ window.Effects = (function () {
           r = r * 0.35 + 18; g = g * 0.3 + 4; bl = bl * 0.35 + 26;
         }
         d[o] = r; d[o + 1] = g; d[o + 2] = bl;
+      }
+    }
+    // distorção local (aparição): os pixels em volta tremem/escorrem
+    if (p.swirl && p.swirl.amp > 0.2) {
+      const sw = p.swirl;
+      const x0 = Math.max(0, Math.floor(sw.x - sw.r)), x1 = Math.min(W - 1, Math.ceil(sw.x + sw.r));
+      const y0 = Math.max(0, Math.floor(sw.y - sw.r)), y1 = Math.min(H - 1, Math.ceil(sw.y + sw.r));
+      const bw = x1 - x0 + 1;
+      const src = new Uint8ClampedArray(bw * (y1 - y0 + 1) * 4);
+      for (let y = y0; y <= y1; y++) src.set(d.subarray((y * W + x0) * 4, (y * W + x1 + 1) * 4), (y - y0) * bw * 4);
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const dist = Math.hypot(x - sw.x, (y - sw.y) * 0.8);
+          if (dist >= sw.r) continue;
+          const f = 1 - dist / sw.r;
+          const sx = Math.min(x1, Math.max(x0, Math.round(x - Math.sin(y * 0.45 + sw.t * 13) * sw.amp * f)));
+          const sy = Math.min(y1, Math.max(y0, Math.round(y - Math.cos(x * 0.4 + sw.t * 9) * sw.amp * 0.6 * f)));
+          const so = ((sy - y0) * bw + (sx - x0)) * 4, o = (y * W + x) * 4;
+          d[o] = src[so]; d[o + 1] = src[so + 1]; d[o + 2] = src[so + 2];
+        }
       }
     }
     // onda (atordoado): cada linha desliza um pouco para os lados

@@ -374,6 +374,25 @@ window.Sound = (function () {
     }
   }
 
+  // Presença: a criatura aparece num canto (grave abafado + sussurro)
+  function presence() {
+    if (!ctx || ended) return;
+    const t = now();
+    noiseBurst(master, t, 1.6, 140, 0.9, 0.16, 'lowpass');
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(54, t);
+    o.frequency.linearRampToValueAtTime(43, t + 1.5);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.14, t + 0.25);
+    g.gain.linearRampToValueAtTime(0.0001, t + 1.7);
+    o.connect(g); g.connect(master);
+    o.start(t);
+    o.stop(t + 1.8);
+    whisper(0.5);
+  }
+
   // Ela agarra: baque no peito + um gemido agudo subindo
   function grabStart() {
     if (!ctx || ended) return;
@@ -560,6 +579,7 @@ window.Sound = (function () {
     screech,
     grabStart,
     shatter,
+    presence,
     setDaze,
     startMusic,
     update,
