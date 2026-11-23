@@ -140,12 +140,13 @@ window.World = (function () {
   add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
   // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
   // e a TV fica na parede que faz fronteira com o meu quarto.
-  // sofá de 3 lugares ocupando todo o lado esquerdo; painel da TV ocupando toda a parede do meu quarto.
-  // Sem mesinha no meio: só um corredor estreito entre o sofá e a TV. O abajur fica no canto, atrás do sofá.
-  add('lamp', 13.1, 4.1, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
-  add('sofa', 14, 4, 2.5, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
-  add('rug', 16.6, 4.7, 2.05, 3.6, { solid: false, decor: true });
-  add('tvPanel', 18.75, 4, 1.25, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
+  // sofá de 3 lugares colado na parede da esquerda (é ele que divide a sala da cozinha);
+  // painel da TV ocupando toda a parede do meu quarto; corredor estreito entre os dois, sem mesinha.
+  // O abajur fica ao lado do braço do sofá, no canto da janela.
+  add('sofa', 13, 4, 2.5, 5, { seats: 3, desc: 'ninguém sentado aqui hoje.' });
+  add('lamp', 15.6, 4.1, 0.8, 0.8, { desc: 'a única luz acesa da sala.' });
+  add('rug', 15.75, 5.1, 2.6, 3.5, { solid: false, decor: true });
+  add('tvPanel', 18.5, 4, 1.5, 5, { desc: 'a tv está desligada. a casa inteira em silêncio.' });
   add('window', 15, 3, 3, 1, { solid: false, decor: true, desc: 'lá fora, a noite está quieta.' });
   add('plant', 12.05, 7.5, 0.9, 0.95, { desc: 'a planta atrás do sofá. algumas folhas secando.' }); // no vão atrás do sofá
   // Suíte
@@ -181,7 +182,7 @@ window.World = (function () {
   const WARM = [1.0, 0.72, 0.42];
   const LIGHTS = {
     sala: [
-      { x: 13.5 * T, y: 4.5 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
+      { x: 16 * T, y: 4.5 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
       { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
