@@ -4,6 +4,7 @@ window.World = (function () {
   const T = C.TILE;
 
   // '#' parede   ' ' fora da casa   '.' piso frio   ',' piso de madeira   'D' porta
+  // 'o' passagem aberta (sem parede): dá para passar, mas marca a troca de cômodo
   const MAP = [
     '                               ',
     '                    #########  ',
@@ -11,7 +12,7 @@ window.World = (function () {
     '#...........#########.......#  ',
     '#...........#.......#.......#  ',
     '#...........#.......#.......#  ',
-    '########DD###.......#.......#  ',
+    '#ooo#ooooooo#.......#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
     '#...#...............#.......#  ',
@@ -321,7 +322,7 @@ window.World = (function () {
     const px = OX + x * T, py = OY + y * T;
     R(ctx, px, py, T, T, '#3a3241');
     // bordas internas
-    const f = (dx, dy) => isFloor(tileAt(x + dx, y + dy)) || tileAt(x + dx, y + dy) === 'D';
+    const f = (dx, dy) => isFloor(tileAt(x + dx, y + dy)) || tileAt(x + dx, y + dy) === 'D' || tileAt(x + dx, y + dy) === 'o';
     if (f(0, 1)) { R(ctx, px, py + T - 3, T, 3, '#5a4f63'); R(ctx, px, py + T - 1, T, 1, '#2a2430'); }
     if (f(0, -1)) R(ctx, px, py, T, 1, '#52485b');
     if (f(1, 0)) R(ctx, px + T - 1, py, 1, T, '#52485b');
@@ -548,24 +549,24 @@ window.World = (function () {
         for (let k = 1; k < 3; k++) R(ctx, x, y + Math.round((h * k) / 3), 2, 1, '#3e2c20'); // portas
         R(ctx, x, y, w, 1, '#7a5842');
         // TV em pé sobre o rack (vista de cima): base + tela fininha perto da parede
-        const ty = y + Math.round(h * 0.2), th = Math.round(h * 0.6);
+        const ty = y + Math.round(h * 0.34), th = Math.round(h * 0.58);
         R(ctx, x + w - 9, ty + th / 2 - 4, 4, 8, '#26262c'); // base/pé
         R(ctx, x + w - 6, ty, 3, th, '#0c0c10'); // TV
         R(ctx, x + w - 6, ty, 1, th, '#33333e');
         R(ctx, x + w - 6, ty + th - 2, 1, 1, '#c02020'); // ledzinho de standby
-        // impressora preta em cima do rack
-        R(ctx, x + 3, y + 3, 12, 11, '#1b1b21');
-        R(ctx, x + 3, y + 3, 12, 1, '#36363f');
-        R(ctx, x + 3, y + 3, 1, 11, '#2a2a32');
-        R(ctx, x + 4, y + 5, 10, 2, '#08080b'); // abertura do papel
-        R(ctx, x + 5, y + 1, 8, 3, '#f2f2ee'); // folha saindo
-        R(ctx, x + 12, y + 11, 2, 1, '#3a8a4a');
-        // modem wi-fi do lado da impressora, com antenas
-        R(ctx, x + 4, y + 17, 10, 6, '#18181e');
-        R(ctx, x + 4, y + 17, 10, 1, '#2c2c36');
-        R(ctx, x + 5, y + 15, 1, 2, '#2c2c36');
-        R(ctx, x + 12, y + 15, 1, 2, '#2c2c36');
-        for (let i = 0; i < 3; i++) R(ctx, x + 6 + i * 2, y + 20, 1, 1, '#2a6a3a');
+        // modem wi-fi (com antenas) na ponta de cima
+        R(ctx, x + 4, y + 4, 10, 6, '#18181e');
+        R(ctx, x + 4, y + 4, 10, 1, '#2c2c36');
+        R(ctx, x + 5, y + 2, 1, 2, '#2c2c36');
+        R(ctx, x + 12, y + 2, 1, 2, '#2c2c36');
+        for (let i = 0; i < 3; i++) R(ctx, x + 6 + i * 2, y + 7, 1, 1, '#2a6a3a');
+        // impressora preta logo do lado, com o papel virado para a parede
+        R(ctx, x + 3, y + 13, 12, 11, '#1b1b21');
+        R(ctx, x + 3, y + 13, 12, 1, '#36363f');
+        R(ctx, x + 3, y + 13, 1, 11, '#2a2a32');
+        R(ctx, x + 13, y + 14, 2, 9, '#08080b'); // abertura do papel (lado da parede)
+        R(ctx, x + 15, y + 15, 4, 7, '#f2f2ee'); // folha saindo para a parede
+        R(ctx, x + 5, y + 21, 2, 1, '#3a8a4a');
         break;
       }
       case 'plant': {
@@ -1037,6 +1038,12 @@ window.World = (function () {
         const c = tileAt(x, y);
         if (c === '#') drawWallTile(ctx, x, y);
         else if (c === 'D') drawDoorTile(ctx, x, y);
+        else if (c === 'o') {
+          // passagem aberta: mesmo piso, só um trilho fininho marcando a divisa
+          drawFloorTile(ctx, x, y, 'ceramic', rand);
+          R(ctx, OX + x * T, OY + y * T + 7, T, 1, '#9b97a3');
+          R(ctx, OX + x * T, OY + y * T + 8, T, 1, '#c7c3cc');
+        }
       }
 
     for (const id in ROOMS) {
@@ -1072,7 +1079,7 @@ window.World = (function () {
       const prev = ctx.globalAlpha;
       for (let i = 0; i < 3; i++) {
         if (Math.sin(time * (3 + i * 2.3) + i) < -0.2) continue;
-        const lx = Math.round(18.5 * T + 6 + i * 2 - cam.x), ly = Math.round(4 * T + 20 - cam.y);
+        const lx = Math.round(18.5 * T + 6 + i * 2 - cam.x), ly = Math.round(4 * T + 7 - cam.y);
         if (hidden(lx, ly)) continue;
         ctx.globalAlpha = prev * k;
         R(ctx, lx, ly, 1, 1, '#4cff8a');
