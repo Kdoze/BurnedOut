@@ -24,9 +24,9 @@ window.World = (function () {
     '#...........#....#........D...#',
     '#...........#....#........#...#',
     '#...........#....#........#...#',
-    '#...........#....#........#...#',
     '###.........#....#........#...#',
     '  ###########....#........#...#',
+    '            #....#........#...#',
     '            ###################',
   ];
   const COLS = MAP[0].length;
@@ -127,7 +127,7 @@ window.World = (function () {
   // varal na faixa logo abaixo do parapeito (x 46-97, y 48-53 em pixels, como marcado)
   add('clothesline', 46 / 16, 48 / 16, 51 / 16, 5 / 16, { solid: false, desc: 'roupas no varal. ainda úmidas, ninguém recolheu.' });
   add('counter', 1, 6, 1, 1);
-  add('wallPlant', 4.6, 5.7, 1, 0.55, { solid: false, onWall: true, desc: 'uma plantinha presa na parede. ela ainda resiste.' });
+  add('wallPlant', 4.6, 5.7, 1, 0.55, { solid: false, onWall: true, room: 'varanda', desc: 'uma plantinha presa na parede. ela ainda resiste.' });
   add('balconyTable', 8.7, 3.15, 2.3, 1.75, { desc: 'duas cadeiras vazias.' });
   add('pot', 11.1, 3.1, 0.85, 0.85);
   // Cozinha / jantar (lado esquerdo)
@@ -140,28 +140,27 @@ window.World = (function () {
   add('dishwasher', 1, 13, 1, 1, { desc: 'a lava-louça desligada. quase nada dentro.' });
   add('microwave', 1, 14, 1, 1, { desc: 'o relógio do micro-ondas marca 21:46.' });
   // cafeteira em cima da divisória e duas banquetas redondas do outro lado (posições da planta)
-  add('coffee_maker', 65 / 16, 151 / 16, 14 / 16, 14 / 16, { solid: false, onWall: true, desc: 'a cafeteira barista, desligada. o café de hoje esfriou na xícara.' });
+  add('coffee_maker', 65 / 16, 151 / 16, 14 / 16, 14 / 16, { solid: false, onWall: true, room: 'sala', desc: 'a cafeteira barista, desligada. o café de hoje esfriou na xícara.' });
   // adega em cima da divisória (x 64-80, y 101-150) com luz fraquinha só para o lado direito
-  add('wineRack', 4, 101 / 16, 1, 49 / 16, { solid: false, onWall: true, desc: 'a adega. as garrafas da minha mãe, intactas.' });
+  add('wineRack', 4, 101 / 16, 1, 49 / 16, { solid: false, onWall: true, room: 'sala', desc: 'a adega. as garrafas da minha mãe, intactas.' });
   // frigobar encostado na divisória, embaixo do pedaço de parede (x 81-97, y 113-129)
   add('minibar', 81 / 16, 113 / 16, 1, 1, { desc: 'o frigobar. umas latinhas e mais nada.' });
   add('stool', 81.5 / 16, 158.5 / 16, 11 / 16, 11 / 16, { desc: 'uma banqueta. ninguém sentou aqui hoje.' });
   add('stool', 81.5 / 16, 172.5 / 16, 11 / 16, 11 / 16, { desc: 'outra banqueta vazia.' });
   // calendário de parede, pendurado na parede da cozinha
-  add('calendar', 19.2, 12.7, 0.625, 0.75, { solid: false, onWall: true, desc: 'um calendário atrás da porta do quarto da minha mãe. hoje é 19/08/2026, quarta-feira.' });
+  add('calendar', 19.2, 12.7, 0.625, 0.75, { solid: false, onWall: true, room: 'quarto_mae', desc: 'um calendário atrás da porta do quarto da minha mãe. hoje é 19/08/2026, quarta-feira.' });
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
-  add('counter', 1, 17, 1, 1);
   // armários na parede da divisória (x 55-64, y 112-195 em pixels, como marcado na planta)
   add('wardrobe', 55 / 16, 7, 9 / 16, 5, { front: 'left', color: '#d8d4cc', desc: 'os armários. pratos e copos empilhados, tudo no lugar.' });
   // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
-  add('chairDown', 7.85, 13.55, 0.8, 0.9);
-  add('chairDown', 9.95, 13.55, 0.8, 0.9);
-  add('dining4', 6.75, 14.5, 5.25, 2.25, { desc: 'quatro lugares. nenhum ocupado.' });
-  add('chairUp', 7.85, 16.8, 0.8, 0.9);
-  add('chairUp', 9.95, 16.8, 0.8, 0.9);
-  add('shoeRack', 6.1, 18.3, 2, 0.7, { desc: 'a sapateira do lado da porta. tênis e chinelos bagunçados.' });
-  add('doormat', 4.15, 18.35, 1.7, 0.6, { solid: false, decor: true });
-  add('frontDoor', 4, 19, 2, 1, { solid: false, onWall: true, desc: 'a porta de casa, trancada. ninguém vai chegar tão cedo.' });
+  add('chairDown', 7.85, 12.55, 0.8, 0.9);
+  add('chairDown', 9.95, 12.55, 0.8, 0.9);
+  add('dining4', 6.75, 13.5, 5.25, 2.25, { desc: 'quatro lugares. nenhum ocupado.' });
+  add('chairUp', 7.85, 15.8, 0.8, 0.9);
+  add('chairUp', 9.95, 15.8, 0.8, 0.9);
+  add('shoeRack', 6.1, 17.3, 2, 0.7, { desc: 'a sapateira do lado da porta. tênis e chinelos bagunçados.' });
+  add('doormat', 4.15, 17.35, 1.7, 0.6, { solid: false, decor: true });
+  add('frontDoor', 4, 18, 2, 1, { solid: false, onWall: true, room: 'sala', desc: 'a porta de casa, trancada. ninguém vai chegar tão cedo.' });
   // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
   // e a TV fica na parede que faz fronteira com o meu quarto.
   // sofá de 3 lugares colado na parede da esquerda (é ele que divide a sala da cozinha);
@@ -208,7 +207,7 @@ window.World = (function () {
     sala: [
       { x: 17 * T, y: 4.45 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
       { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
-      { x: 5 * T, y: 18.95 * T, r: 18, c: WARM, i: 0.28 }, // luz do corredor do prédio passando por baixo da porta
+      { x: 5 * T, y: 17.95 * T, r: 18, c: WARM, i: 0.28 }, // luz do corredor do prédio passando por baixo da porta
       { x: 80.5, y: 126, r: 28, c: [1.0, 0.85, 0.45], i: 0.16, minX: 80.5 }, // adega: luz fraquinha só para a direita
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
       { x: 1.6 * T, y: 14.5 * T, r: 10, c: [0.4, 1.0, 0.6], i: 0.5, kind: 'tiny' },
@@ -694,17 +693,22 @@ window.World = (function () {
         break;
       }
       case 'wineRack': {
-        // adega de madeira escura com garrafas deitadas (vistas pela ponta) e fita de led quente à direita
-        R(ctx, x, y, w, h, '#2a1c14');
-        R(ctx, x + 1, y + 1, w - 3, h - 2, '#3e2a1e');
-        for (let j = 3; j < h - 2; j += 4) {
-          for (let i = 2; i < w - 4; i += 4) {
-            const k = ((i + j) / 4) % 3;
-            R(ctx, x + i, y + j, 3, 3, k < 1 ? '#5a1424' : k < 2 ? '#1f3a24' : '#4a1420');
-            R(ctx, x + i + 1, y + j + 1, 1, 1, '#c8a050'); // tampinha
-          }
+        // como no esboço: um armário de madeira e, do lado direito, uma coluna de vinhos deitados
+        // (cada bolinha é o fundo de uma garrafa)
+        const bw = 5;
+        R(ctx, x, y, w - bw, h, '#4a3222'); // contorno do armário
+        R(ctx, x + 1, y + 1, w - bw - 2, h - 2, '#70503a'); // madeira
+        R(ctx, x + 1, y + 1, w - bw - 2, 1, '#8c6a4e');
+        for (let j = 4; j < h - 2; j += 6) R(ctx, x + 2, y + j, w - bw - 4, 1, '#604430'); // veio
+        R(ctx, x + Math.floor((w - bw) / 2), y + 2, 1, h - 4, '#4a3222'); // divisão das portas
+        R(ctx, x + Math.floor((w - bw) / 2) - 2, y + Math.floor(h / 2), 1, 3, '#c8b070'); // puxadores
+        R(ctx, x + Math.floor((w - bw) / 2) + 2, y + Math.floor(h / 2), 1, 3, '#c8b070');
+        for (let j = 1, n = 0; j + 4 <= h; j += 4, n++) {
+          const c = n % 3 === 1 ? '#1e3420' : '#3c1018';
+          R(ctx, x + w - bw + 1, y + j, 3, 4, c);
+          R(ctx, x + w - bw, y + j + 1, 5, 2, c);
+          R(ctx, x + w - bw + 1, y + j + 1, 1, 1, '#d0a868'); // reflexo do vidro
         }
-        R(ctx, x + w - 2, y + 1, 1, h - 2, '#8a6a30'); // fita de led (o brilho vem da luz)
         break;
       }
       case 'minibar':
@@ -1239,8 +1243,7 @@ window.World = (function () {
         }
       }
 
-    // objetos em cima/na frente das paredes (cafeteira na divisória, calendário)
-    for (const f of F) if (f.onWall) drawFurniture(ctx, f);
+    // (objetos "na parede" são desenhados só no canvas do cômodo deles, mais abaixo)
 
     for (const id in ROOMS) {
       const rc = document.createElement('canvas');
@@ -1256,6 +1259,8 @@ window.World = (function () {
       if (id === 'varanda') {
         drawFurniture(rx, F.find((f) => f.type === 'railing'));
       }
+      // objetos na parede que pertencem a este cômodo (não vazam para o cômodo vizinho)
+      for (const f of F) if (f.onWall && f.room === id) drawFurniture(rx, f);
       roomCanvas[id] = rc;
     }
   }
