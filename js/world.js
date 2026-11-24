@@ -26,8 +26,8 @@ window.World = (function () {
     '#...........#....#........#...#',
     '#...........#....#........#...#',
     '###.........#....#........#...#',
-    '  #.........#....#........#...#',
-    '  #############################',
+    '  ###########....#........#...#',
+    '            ###################',
   ];
   const COLS = MAP[0].length;
   // paredes parciais [início, fim] em pixels dentro do tile — seguem as marcações da planta:
@@ -51,7 +51,6 @@ window.World = (function () {
   const WINDOWS = [
     [15, 3], [16, 3], [17, 3], // janela da sala de estar
     [23, 1], [24, 1], // atrás da cômoda do meu quarto
-    [4, 20], [5, 20],
     [14, 20],
     [21, 20], [22, 20], // atrás do guarda-roupa, atrás da cama da minha mãe
   ];
@@ -128,7 +127,7 @@ window.World = (function () {
   // varal na faixa logo abaixo do parapeito (x 46-97, y 48-53 em pixels, como marcado)
   add('clothesline', 46 / 16, 48 / 16, 51 / 16, 5 / 16, { solid: false, desc: 'roupas no varal. ainda úmidas, ninguém recolheu.' });
   add('counter', 1, 6, 1, 1);
-  add('planter', 4.4, 5.15, 2.2, 0.85, { desc: 'as plantas precisam de água.' });
+  add('wallPlant', 4.6, 5.7, 1, 0.55, { solid: false, onWall: true, desc: 'uma plantinha presa na parede. ela ainda resiste.' });
   add('balconyTable', 8.7, 3.15, 2.3, 1.75, { desc: 'duas cadeiras vazias.' });
   add('pot', 11.1, 3.1, 0.85, 0.85);
   // Cozinha / jantar (lado esquerdo)
@@ -141,22 +140,28 @@ window.World = (function () {
   add('dishwasher', 1, 13, 1, 1, { desc: 'a lava-louça desligada. quase nada dentro.' });
   add('microwave', 1, 14, 1, 1, { desc: 'o relógio do micro-ondas marca 21:46.' });
   // cafeteira em cima da divisória e duas banquetas redondas do outro lado (posições da planta)
-  add('coffee_maker', 68 / 16, 152 / 16, 9 / 16, 7 / 16, { solid: false, onWall: true, desc: 'a cafeteira desligada. o café de hoje esfriou.' });
+  add('coffee_maker', 65 / 16, 151 / 16, 14 / 16, 14 / 16, { solid: false, onWall: true, desc: 'a cafeteira barista, desligada. o café de hoje esfriou na xícara.' });
+  // adega em cima da divisória (x 64-80, y 101-150) com luz fraquinha só para o lado direito
+  add('wineRack', 4, 101 / 16, 1, 49 / 16, { solid: false, onWall: true, desc: 'a adega. as garrafas da minha mãe, intactas.' });
+  // frigobar encostado na divisória, embaixo do pedaço de parede (x 81-97, y 113-129)
+  add('minibar', 81 / 16, 113 / 16, 1, 1, { desc: 'o frigobar. umas latinhas e mais nada.' });
   add('stool', 81.5 / 16, 158.5 / 16, 11 / 16, 11 / 16, { desc: 'uma banqueta. ninguém sentou aqui hoje.' });
   add('stool', 81.5 / 16, 172.5 / 16, 11 / 16, 11 / 16, { desc: 'outra banqueta vazia.' });
   // calendário de parede, pendurado na parede da cozinha
-  add('calendar', 12.2, 6.7, 0.625, 0.75, { solid: false, onWall: true, desc: 'um calendário escondido atrás do sofá. hoje é 19/08/2026, quarta-feira.' });
+  add('calendar', 19.2, 12.7, 0.625, 0.75, { solid: false, onWall: true, desc: 'um calendário atrás da porta do quarto da minha mãe. hoje é 19/08/2026, quarta-feira.' });
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
   add('counter', 1, 17, 1, 1);
   // armários na parede da divisória (x 55-64, y 112-195 em pixels, como marcado na planta)
   add('wardrobe', 55 / 16, 7, 9 / 16, 5, { front: 'left', color: '#d8d4cc', desc: 'os armários. pratos e copos empilhados, tudo no lugar.' });
   // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
-  add('chairDown', 7.85, 14.3, 0.8, 0.9);
-  add('chairDown', 9.95, 14.3, 0.8, 0.9);
-  add('dining4', 6.75, 15.25, 5.25, 2.25, { desc: 'quatro lugares. nenhum ocupado.' });
-  add('chairUp', 7.85, 17.55, 0.8, 0.9);
-  add('chairUp', 9.95, 17.55, 0.8, 0.9);
-  add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
+  add('chairDown', 7.85, 13.55, 0.8, 0.9);
+  add('chairDown', 9.95, 13.55, 0.8, 0.9);
+  add('dining4', 6.75, 14.5, 5.25, 2.25, { desc: 'quatro lugares. nenhum ocupado.' });
+  add('chairUp', 7.85, 16.8, 0.8, 0.9);
+  add('chairUp', 9.95, 16.8, 0.8, 0.9);
+  add('shoeRack', 6.1, 18.3, 2, 0.7, { desc: 'a sapateira do lado da porta. tênis e chinelos bagunçados.' });
+  add('doormat', 4.15, 18.35, 1.7, 0.6, { solid: false, decor: true });
+  add('frontDoor', 4, 19, 2, 1, { solid: false, onWall: true, desc: 'a porta de casa, trancada. ninguém vai chegar tão cedo.' });
   // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
   // e a TV fica na parede que faz fronteira com o meu quarto.
   // sofá de 3 lugares colado na parede da esquerda (é ele que divide a sala da cozinha);
@@ -203,7 +208,8 @@ window.World = (function () {
     sala: [
       { x: 17 * T, y: 4.45 * T, r: 76, c: WARM, i: 0.75, kind: 'lamp' },
       { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
-      { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
+      { x: 5 * T, y: 18.95 * T, r: 18, c: WARM, i: 0.28 }, // luz do corredor do prédio passando por baixo da porta
+      { x: 80.5, y: 126, r: 28, c: [1.0, 0.85, 0.45], i: 0.16, minX: 80.5 }, // adega: luz fraquinha só para a direita
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
       { x: 1.6 * T, y: 14.5 * T, r: 10, c: [0.4, 1.0, 0.6], i: 0.5, kind: 'tiny' },
     ],
@@ -659,17 +665,78 @@ window.World = (function () {
         R(ctx, x + 1, y + 1, w - 2, h - 6, '#4566a6');
         break;
       case 'coffee_maker':
-        // cafeteira moderna (expresso de cápsula) vista de cima: corpo preto fosco,
-        // tampa metálica, reservatório de água atrás e uma xícara na frente (lado das banquetas)
-        R(ctx, x, y, w - 3, h, '#16171b');
-        R(ctx, x, y, w - 3, 1, '#3a3d45');
-        R(ctx, x + 1, y + 1, 3, h - 2, '#b9bdc6'); // tampa metálica
-        R(ctx, x + 1, y + 1, 3, 1, '#e4e7ec');
-        R(ctx, x, y + 1, 1, h - 2, '#5a7a9a'); // reservatório de água (atrás)
-        R(ctx, x + 4, y + h - 2, 1, 1, '#5ab8ff'); // led azul
-        R(ctx, x + w - 3, y + 1, 3, h - 2, '#2a2c32'); // bandeja
-        R(ctx, x + w - 3, y + 2, 2, 2, '#f2f0ec'); // xícara
-        R(ctx, x + w - 3, y + 2, 1, 1, '#6a4028');
+        // cafeteira barista (expresso grande) vista de cima: corpo metálico, reservatório atrás,
+        // manômetro, porta-filtro com cabo preto, bico vaporizador e xícara na bandeja
+        R(ctx, x + 1, y + 1, w - 1, h - 1, sh);
+        R(ctx, x, y, w - 4, h, '#9aa0aa'); // corpo metálico
+        R(ctx, x, y, w - 4, 1, '#d4d8de');
+        R(ctx, x + 1, y + 1, 3, h - 2, '#5a7a9a'); // reservatório de água
+        R(ctx, x + 1, y + 1, 3, 1, '#8ab0d0');
+        disc(ctx, x + 7, y + 4, 2, '#f2f2f0'); // manômetro
+        R(ctx, x + 7, y + 3, 1, 2, '#1a1a1e');
+        R(ctx, x + 5, y + 8, 5, 3, '#2a2c32'); // grupo / porta-filtro
+        R(ctx, x + 10, y + 9, 4, 1, '#111114'); // cabo do porta-filtro
+        R(ctx, x + w - 4, y + 2, 4, h - 4, '#3a3d45'); // bandeja
+        R(ctx, x + w - 3, y + 3, 2, 2, '#f2f0ec'); // xícara
+        R(ctx, x + w - 3, y + 3, 1, 1, '#6a4028');
+        R(ctx, x + 4, y + h - 2, 1, 1, '#ff5a3a'); // led
+        R(ctx, x + w - 5, y + h - 3, 1, 2, '#c8ccd4'); // vaporizador
+        break;
+      case 'wallPlant': {
+        // vasinho preso na parede, com folhas caindo
+        R(ctx, x + 4, y + h - 4, 8, 4, '#8a5a3a');
+        R(ctx, x + 4, y + h - 4, 8, 1, '#a8744a');
+        R(ctx, x + 5, y + h - 1, 6, 1, '#5a3a24'); // suporte na parede
+        for (const [ox, oy, c] of [[3, 1, '#3f6b3a'], [6, 0, '#4f8a44'], [9, 1, '#3f6b3a'], [11, 3, '#5f9a4e'], [2, 4, '#4f8a44'], [7, 2, '#6fae5a']])
+          R(ctx, x + ox, y + oy, 3, 2, c);
+        R(ctx, x + 1, y + h - 2, 2, 3, '#3f6b3a'); // folha pendurada
+        R(ctx, x + 12, y + h - 2, 2, 4, '#4f8a44');
+        break;
+      }
+      case 'wineRack': {
+        // adega de madeira escura com garrafas deitadas (vistas pela ponta) e fita de led quente à direita
+        R(ctx, x, y, w, h, '#2a1c14');
+        R(ctx, x + 1, y + 1, w - 3, h - 2, '#3e2a1e');
+        for (let j = 3; j < h - 2; j += 4) {
+          for (let i = 2; i < w - 4; i += 4) {
+            const k = ((i + j) / 4) % 3;
+            R(ctx, x + i, y + j, 3, 3, k < 1 ? '#5a1424' : k < 2 ? '#1f3a24' : '#4a1420');
+            R(ctx, x + i + 1, y + j + 1, 1, 1, '#c8a050'); // tampinha
+          }
+        }
+        R(ctx, x + w - 2, y + 1, 1, h - 2, '#8a6a30'); // fita de led (o brilho vem da luz)
+        break;
+      }
+      case 'minibar':
+        // frigobar visto de cima, puxador do lado das banquetas
+        R(ctx, x + 1, y + 1, w - 1, h - 1, sh);
+        R(ctx, x, y, w - 1, h - 1, '#d8d8de');
+        R(ctx, x, y, w - 1, 1, '#ececf0');
+        R(ctx, x + w - 3, y + 1, 1, h - 3, '#9a9aa6');
+        R(ctx, x + w - 2, y + 4, 1, 6, '#6a6a76');
+        R(ctx, x + 3, y + 4, 4, 3, '#c0303a'); // ímã
+        break;
+      case 'shoeRack':
+        // sapateira baixa com sapatos em cima
+        R(ctx, x + 1, y + 1, w, h, sh);
+        R(ctx, x, y, w, h, '#4e3a2c');
+        R(ctx, x, y, w, 1, '#6a4f3c');
+        for (const [ox, c] of [[2, '#e8e8e8'], [7, '#e8e8e8'], [13, '#2a2a30'], [18, '#2a2a30'], [24, '#c06080']])
+          R(ctx, x + ox, y + 2, 4, h - 4, c);
+        break;
+      case 'doormat':
+        R(ctx, x, y, w, h, '#5a4a3a');
+        R(ctx, x + 1, y + 1, w - 2, h - 2, '#6e5c48');
+        for (let i = 2; i < w - 2; i += 3) R(ctx, x + i, y + 2, 1, h - 4, '#5a4a3a');
+        break;
+      case 'frontDoor':
+        // porta de entrada na parede (vista de cima): soleira, folha de madeira, maçaneta e olho mágico
+        R(ctx, x, y + 3, w, 10, '#6a6a72');
+        R(ctx, x + 1, y + 4, w - 2, 8, '#5e3e28');
+        for (let i = 4; i < w - 2; i += 5) R(ctx, x + i, y + 5, 1, 6, '#4e3220');
+        R(ctx, x + w - 6, y + 7, 2, 2, '#c8b070'); // maçaneta
+        R(ctx, x + w / 2, y + 6, 1, 1, '#1a1a20'); // olho mágico
+        R(ctx, x, y, w, 3, '#c9c3b8'); // soleira
         break;
       case 'cleaningCabinet': {
         // armarinho de produtos de limpeza na bancada da varanda, com frascos em cima

@@ -38,7 +38,7 @@ window.Effects = (function () {
     for (const L of p.lights) {
       if (Math.abs(L.i) <= 0.001) continue; // luz negativa = escurece
       const r = L.r, r2 = r * r;
-      const x0 = Math.max(0, Math.floor(L.x - r)), x1 = Math.min(W - 1, Math.ceil(L.x + r));
+      const x0 = Math.max(0, Math.floor(L.x - r), L.minX != null ? Math.ceil(L.minX) : 0), x1 = Math.min(W - 1, Math.ceil(L.x + r));
       const y0 = Math.max(0, Math.floor(L.y - r)), y1 = Math.min(H - 1, Math.ceil(L.y + r));
       const cr = L.c[0] * L.i, cg = L.c[1] * L.i, cb = L.c[2] * L.i;
       for (let y = y0; y <= y1; y++) {

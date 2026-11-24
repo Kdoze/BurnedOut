@@ -413,7 +413,7 @@
       } else if (L.kind !== 'tiny') {
         i *= 1 - D * 0.75;
       }
-      out.push({ x: L.x - cam.x, y: L.y - cam.y, r: L.r, c: L.c, i });
+      out.push({ x: L.x - cam.x, y: L.y - cam.y, r: L.r, c: L.c, i, minX: L.minX != null ? L.minX - cam.x : undefined });
     }
     // luz suave em volta do menino
     const pr = 48 - D * 16;
