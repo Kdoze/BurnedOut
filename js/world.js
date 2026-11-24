@@ -122,9 +122,11 @@ window.World = (function () {
   // Varanda
   add('railing', 1, 2, 11, 1, { solid: false, decor: true, desc: 'a cidade continua acordada lá fora.' });
   // a bancada de mármore preto da cozinha continua pelo lado esquerdo até o fim da varanda
-  add('washer', 1, 3, 1, 1, { desc: 'a máquina de lavar, parada.' });
-  add('counter', 1, 4, 1, 1);
-  add('counter', 1, 5, 1, 1);
+  add('counter', 1, 3, 1, 1);
+  add('washer', 1, 4, 1, 1, { desc: 'a máquina de lavar, parada. ninguém ligou hoje.' });
+  add('cleaningCabinet', 1, 5, 1, 1, { desc: 'o armário dos produtos de limpeza. cheiro de água sanitária.' });
+  // varal na faixa logo abaixo do parapeito (x 46-97, y 48-53 em pixels, como marcado)
+  add('clothesline', 46 / 16, 48 / 16, 51 / 16, 5 / 16, { solid: false, desc: 'roupas no varal. ainda úmidas, ninguém recolheu.' });
   add('counter', 1, 6, 1, 1);
   add('planter', 4.4, 5.15, 2.2, 0.85, { desc: 'as plantas precisam de água.' });
   add('balconyTable', 8.7, 3.15, 2.3, 1.75, { desc: 'duas cadeiras vazias.' });
@@ -143,11 +145,11 @@ window.World = (function () {
   add('stool', 81.5 / 16, 158.5 / 16, 11 / 16, 11 / 16, { desc: 'uma banqueta. ninguém sentou aqui hoje.' });
   add('stool', 81.5 / 16, 172.5 / 16, 11 / 16, 11 / 16, { desc: 'outra banqueta vazia.' });
   // calendário de parede, pendurado na parede da cozinha
-  add('calendar', 5.2, 6.7, 0.625, 0.75, { solid: false, onWall: true, desc: 'o calendário na parede. hoje é 19/08/2026, quarta-feira.' });
+  add('calendar', 12.2, 6.7, 0.625, 0.75, { solid: false, onWall: true, desc: 'um calendário escondido atrás do sofá. hoje é 19/08/2026, quarta-feira.' });
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
   add('counter', 1, 17, 1, 1);
   // armários na parede da divisória (x 55-64, y 112-195 em pixels, como marcado na planta)
-  add('wardrobe', 55 / 16, 7, 9 / 16, 83 / 16, { front: 'left', color: '#d8d4cc', desc: 'os armários. pratos e copos empilhados, tudo no lugar.' });
+  add('wardrobe', 55 / 16, 7, 9 / 16, 5, { front: 'left', color: '#d8d4cc', desc: 'os armários. pratos e copos empilhados, tudo no lugar.' });
   // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
   add('chairDown', 7.85, 14.3, 0.8, 0.9);
   add('chairDown', 9.95, 14.3, 0.8, 0.9);
@@ -657,13 +659,50 @@ window.World = (function () {
         R(ctx, x + 1, y + 1, w - 2, h - 6, '#4566a6');
         break;
       case 'coffee_maker':
-        // cafeteira vista de cima: corpo preto, jarra de vidro com café, ledzinho
-        R(ctx, x, y, w, h, '#141418');
-        R(ctx, x, y, w, 1, '#2c2c34');
-        disc(ctx, x + 3, y + 4, 2, '#5a3a24');
-        R(ctx, x + 2, y + 2, 2, 1, '#8a6a4a');
-        R(ctx, x + w - 2, y + 2, 1, 1, '#d03030');
+        // cafeteira moderna (expresso de cápsula) vista de cima: corpo preto fosco,
+        // tampa metálica, reservatório de água atrás e uma xícara na frente (lado das banquetas)
+        R(ctx, x, y, w - 3, h, '#16171b');
+        R(ctx, x, y, w - 3, 1, '#3a3d45');
+        R(ctx, x + 1, y + 1, 3, h - 2, '#b9bdc6'); // tampa metálica
+        R(ctx, x + 1, y + 1, 3, 1, '#e4e7ec');
+        R(ctx, x, y + 1, 1, h - 2, '#5a7a9a'); // reservatório de água (atrás)
+        R(ctx, x + 4, y + h - 2, 1, 1, '#5ab8ff'); // led azul
+        R(ctx, x + w - 3, y + 1, 3, h - 2, '#2a2c32'); // bandeja
+        R(ctx, x + w - 3, y + 2, 2, 2, '#f2f0ec'); // xícara
+        R(ctx, x + w - 3, y + 2, 1, 1, '#6a4028');
         break;
+      case 'cleaningCabinet': {
+        // armarinho de produtos de limpeza na bancada da varanda, com frascos em cima
+        R(ctx, x, y, w, h, '#34333b');
+        R(ctx, x + 1, y + 1, w - 4, h - 2, '#cfd0d6');
+        R(ctx, x + 1, y + 1, w - 4, 1, '#e6e7ec');
+        R(ctx, x + w - 3, y, 3, h, '#25242b');
+        R(ctx, x + 2, y + 3, 3, 4, '#3a7ad0'); R(ctx, x + 3, y + 2, 1, 1, '#f0f0f0'); // borrifador
+        R(ctx, x + 6, y + 3, 3, 5, '#e0c040'); R(ctx, x + 7, y + 2, 1, 1, '#3a8a4a'); // detergente
+        R(ctx, x + 2, y + 9, 4, 5, '#f2f2f0'); R(ctx, x + 3, y + 8, 2, 1, '#c03030'); // água sanitária
+        R(ctx, x + 8, y + 10, 3, 3, '#7ac0a0'); // esponja
+        break;
+      }
+      case 'clothesline': {
+        // varal: dois fios de metal com roupas penduradas (inclusive uma camiseta listrada roxa)
+        R(ctx, x, y, 1, h, '#8a8a96');
+        R(ctx, x + w - 1, y, 1, h, '#8a8a96');
+        R(ctx, x, y + 1, w, 1, '#b8b8c4');
+        R(ctx, x, y + 3, w, 1, '#b8b8c4');
+        const items = [
+          [3, 7, ['#5b2b8e', '#b892ea']], // camiseta listrada
+          [12, 10, ['#e8e4dc']], // toalha
+          [24, 6, ['#17141c']], // calça preta
+          [32, 2, ['#9a9aa6']], [35, 2, ['#9a9aa6']], // meias
+          [40, 8, ['#4a6a9a']], // camisa
+        ];
+        for (const [ox, iw, cols] of items) {
+          for (let k = 0; k < iw; k++) R(ctx, x + ox + k, y, 1, h, cols[k % cols.length]);
+          R(ctx, x + ox, y, 1, 1, '#d8c070'); // pregador
+          R(ctx, x + ox + iw - 1, y, 1, 1, '#d8c070');
+        }
+        break;
+      }
       case 'stool':
         // banqueta redonda (assento estofado visto de cima)
         disc(ctx, x + w / 2 + 1, y + h / 2 + 1, 5, sh);
