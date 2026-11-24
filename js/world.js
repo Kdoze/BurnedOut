@@ -122,31 +122,38 @@ window.World = (function () {
   // Varanda
   add('railing', 1, 2, 11, 1, { solid: false, decor: true, desc: 'a cidade continua acordada lá fora.' });
   // a bancada de mármore preto da cozinha continua pelo lado esquerdo até o fim da varanda
-  add('tanque', 1, 3, 1, 2, { desc: 'o tanque. roupas esquecidas no varal.' });
+  add('washer', 1, 3, 1, 1, { desc: 'a máquina de lavar, parada.' });
+  add('counter', 1, 4, 1, 1);
   add('counter', 1, 5, 1, 1);
   add('counter', 1, 6, 1, 1);
   add('planter', 4.4, 5.15, 2.2, 0.85, { desc: 'as plantas precisam de água.' });
   add('balconyTable', 8.7, 3.15, 2.3, 1.75, { desc: 'duas cadeiras vazias.' });
   add('pot', 11.1, 3.1, 0.85, 0.85);
   // Cozinha / jantar (lado esquerdo)
-  add('washer', 1, 7, 1, 1, { desc: 'a máquina de lavar, parada.' });
+  add('tanque', 1, 7, 1, 1, { desc: 'o tanque. roupas esquecidas de molho.' });
   add('counter', 1, 8, 1, 1);
-  add('counter', 1, 9, 1, 1);
-  add('stove', 1, 10, 1, 1, { desc: 'o fogão está frio.' });
+  add('stove', 1, 9, 1, 1, { desc: 'o fogão está frio.' });
+  add('counter', 1, 10, 1, 1);
   add('board', 1, 11, 1, 1, { desc: 'a tábua de carne, limpa. ninguém cozinhou hoje.' });
   add('sink', 1, 12, 1, 1, { desc: "a pia. um copo d'água pela metade." });
   add('dishwasher', 1, 13, 1, 1, { desc: 'a lava-louça desligada. quase nada dentro.' });
-  add('microwave', 1, 14, 1, 1, { desc: 'o relógio do micro-ondas pisca 00:00.' });
+  add('microwave', 1, 14, 1, 1, { desc: 'o relógio do micro-ondas marca 21:46.' });
+  // cafeteira em cima da divisória e duas banquetas redondas do outro lado (posições da planta)
+  add('coffee_maker', 68 / 16, 152 / 16, 9 / 16, 7 / 16, { solid: false, onWall: true, desc: 'a cafeteira desligada. o café de hoje esfriou.' });
+  add('stool', 81.5 / 16, 158.5 / 16, 11 / 16, 11 / 16, { desc: 'uma banqueta. ninguém sentou aqui hoje.' });
+  add('stool', 81.5 / 16, 172.5 / 16, 11 / 16, 11 / 16, { desc: 'outra banqueta vazia.' });
+  // calendário de parede, pendurado na parede da cozinha
+  add('calendar', 5.2, 6.7, 0.625, 0.75, { solid: false, onWall: true, desc: 'o calendário na parede. hoje é 19/08/2026, quarta-feira.' });
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
   add('counter', 1, 17, 1, 1);
   // armários na parede da divisória (x 55-64, y 112-195 em pixels, como marcado na planta)
   add('wardrobe', 55 / 16, 7, 9 / 16, 83 / 16, { front: 'left', color: '#d8d4cc', desc: 'os armários. pratos e copos empilhados, tudo no lugar.' });
   // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
-  add('chairDown', 8.9, 14.85, 0.8, 0.9);
-  add('chairDown', 10.6, 14.85, 0.8, 0.9);
-  add('dining4', 8.25, 15.75, 3.75, 1.5, { desc: 'quatro lugares. nenhum ocupado.' });
-  add('chairUp', 8.9, 17.25, 0.8, 0.9);
-  add('chairUp', 10.6, 17.25, 0.8, 0.9);
+  add('chairDown', 7.85, 14.3, 0.8, 0.9);
+  add('chairDown', 9.95, 14.3, 0.8, 0.9);
+  add('dining4', 6.75, 15.25, 5.25, 2.25, { desc: 'quatro lugares. nenhum ocupado.' });
+  add('chairUp', 7.85, 17.55, 0.8, 0.9);
+  add('chairUp', 9.95, 17.55, 0.8, 0.9);
   add('lowShelf', 5.8, 19.25, 2, 0.75, { desc: 'porta-retratos de outros dias.' });
   // Sala de estar (onde era o quarto de cima, sem a parede): o sofá separa da cozinha/jantar,
   // e a TV fica na parede que faz fronteira com o meu quarto.
@@ -649,6 +656,32 @@ window.World = (function () {
         R(ctx, x, y + h - 4, w, 4, '#24406e');
         R(ctx, x + 1, y + 1, w - 2, h - 6, '#4566a6');
         break;
+      case 'coffee_maker':
+        // cafeteira vista de cima: corpo preto, jarra de vidro com café, ledzinho
+        R(ctx, x, y, w, h, '#141418');
+        R(ctx, x, y, w, 1, '#2c2c34');
+        disc(ctx, x + 3, y + 4, 2, '#5a3a24');
+        R(ctx, x + 2, y + 2, 2, 1, '#8a6a4a');
+        R(ctx, x + w - 2, y + 2, 1, 1, '#d03030');
+        break;
+      case 'stool':
+        // banqueta redonda (assento estofado visto de cima)
+        disc(ctx, x + w / 2 + 1, y + h / 2 + 1, 5, sh);
+        disc(ctx, x + w / 2, y + h / 2, 5, '#2a2a30');
+        disc(ctx, x + w / 2, y + h / 2, 4, '#4a3a32');
+        R(ctx, x + w / 2 - 2, y + h / 2 - 2, 2, 1, '#6a5446');
+        break;
+      case 'calendar': {
+        // calendário de parede: folha clara, cabeçalho vermelho, dia 19 marcado
+        R(ctx, x + 1, y + 1, w, h, sh);
+        R(ctx, x, y, w, h, '#ece8de');
+        R(ctx, x, y, w, 3, '#c0303a');
+        R(ctx, x + w / 2 - 1, y - 1, 2, 1, '#6a6a72'); // preguinho
+        for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) R(ctx, x + 1 + c * 2, y + 4 + r * 2, 1, 1, '#9a968e');
+        R(ctx, x + 4, y + 7, 3, 3, '#c0303a'); // dia 19 marcado
+        R(ctx, x + 5, y + 8, 1, 1, '#ece8de');
+        break;
+      }
       case 'dining4': {
         // mesa retangular na horizontal, 4 lugares
         R(ctx, x + 2, y + 2, w, h, sh);
@@ -656,7 +689,7 @@ window.World = (function () {
         R(ctx, x, y, w, 1, '#a8774c');
         for (let i = 7; i < w; i += 8) R(ctx, x + i, y, 1, h, '#7a4f2d');
         R(ctx, x, y + h - 1, w, 1, '#6e4527');
-        for (const [px, py] of [[7, 4], [w - 13, 4], [7, h - 5], [w - 13, h - 5]]) {
+        for (const [px, py] of [[Math.round(w * 0.28), 5], [Math.round(w * 0.68), 5], [Math.round(w * 0.28), h - 6], [Math.round(w * 0.68), h - 6]]) {
           disc(ctx, x + px, y + py, 3, '#e8e6e2');
           R(ctx, x + px - 1, y + py - 1, 2, 2, '#c8c6c2');
         }
@@ -1079,10 +1112,10 @@ window.World = (function () {
         }
       }
     // móveis "de chão" primeiro (tapetes), depois o resto
-    for (const f of F) if (f.decor) drawFurniture(ctx, f);
+    for (const f of F) if (f.decor && !f.onWall) drawFurniture(ctx, f);
     for (let y = 0; y < ROWS; y++)
       for (let x = 0; x < COLS; x++) if (isFloor(tileAt(x, y))) wallShadows(ctx, x, y);
-    for (const f of F) if (!f.decor) drawFurniture(ctx, f);
+    for (const f of F) if (!f.decor && !f.onWall) drawFurniture(ctx, f);
     for (let y = 0; y < ROWS; y++)
       for (let x = 0; x < COLS; x++) {
         const c = tileAt(x, y);
@@ -1099,6 +1132,9 @@ window.World = (function () {
           if (b < T) R(ctx, px + b - 1, py, 1, T, '#52485b');
         }
       }
+
+    // objetos em cima/na frente das paredes (cafeteira na divisória, calendário)
+    for (const f of F) if (f.onWall) drawFurniture(ctx, f);
 
     for (const id in ROOMS) {
       const rc = document.createElement('canvas');

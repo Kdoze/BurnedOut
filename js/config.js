@@ -18,7 +18,7 @@ window.CONFIG = {
   PLAYER_SPEED: 54,      // pixels por segundo
 
   // Celular (em cima da cômoda do meu quarto)
-  PHONE_START_TIME: '22:41',  // hora no celular quando o jogo começa (anda junto com a música)
+  PHONE_START_TIME: '21:46',  // hora no celular quando o jogo começa (anda junto com a música)
   PHONE_LOCK_DATE: 'quarta-feira',
   PHONE_NOTIFICATION: '46 mensagens de 5 conversas',
   PHONE_UNREAD: 46,
