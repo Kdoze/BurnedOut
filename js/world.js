@@ -131,14 +131,16 @@ window.World = (function () {
   // Cozinha / jantar (lado esquerdo)
   add('washer', 1, 7, 1, 1, { desc: 'a máquina de lavar, parada.' });
   add('counter', 1, 8, 1, 1);
-  add('microwave', 1, 9, 1, 1, { desc: 'o relógio do micro-ondas pisca 00:00.' });
+  add('counter', 1, 9, 1, 1);
   add('stove', 1, 10, 1, 1, { desc: 'o fogão está frio.' });
-  add('counter', 1, 11, 1, 1);
-  add('board', 1, 12, 1, 1);
-  add('sink', 1, 13, 1, 1, { desc: "um copo d'água pela metade." });
-  add('counter', 1, 14, 1, 1);
+  add('board', 1, 11, 1, 1, { desc: 'a tábua de carne, limpa. ninguém cozinhou hoje.' });
+  add('sink', 1, 12, 1, 1, { desc: "a pia. um copo d'água pela metade." });
+  add('dishwasher', 1, 13, 1, 1, { desc: 'a lava-louça desligada. quase nada dentro.' });
+  add('microwave', 1, 14, 1, 1, { desc: 'o relógio do micro-ondas pisca 00:00.' });
   add('fridge', 1, 15, 1, 2, { desc: 'a geladeira zumbe baixinho. não estou com fome.' });
   add('counter', 1, 17, 1, 1);
+  // armários na parede da divisória (x 55-64, y 112-195 em pixels, como marcado na planta)
+  add('wardrobe', 55 / 16, 7, 9 / 16, 83 / 16, { front: 'left', color: '#d8d4cc', desc: 'os armários. pratos e copos empilhados, tudo no lugar.' });
   // mesa de 4 lugares, na horizontal, encostada na parede do banheiro
   add('chairDown', 8.9, 14.85, 0.8, 0.9);
   add('chairDown', 10.6, 14.85, 0.8, 0.9);
@@ -194,7 +196,7 @@ window.World = (function () {
       { x: 16.5 * T, y: 4.4 * T, r: 52, c: MOON, i: 0.32 },
       { x: 5 * T, y: 19.4 * T, r: 52, c: MOON, i: 0.4 },
       { x: 9 * T, y: 7.2 * T, r: 50, c: MOON, i: 0.32 },
-      { x: 1.6 * T, y: 9.5 * T, r: 10, c: [0.4, 1.0, 0.6], i: 0.5, kind: 'tiny' },
+      { x: 1.6 * T, y: 14.5 * T, r: 10, c: [0.4, 1.0, 0.6], i: 0.5, kind: 'tiny' },
     ],
     varanda: [
       { x: 3 * T, y: 3 * T, r: 58, c: [0.55, 0.5, 0.85], i: 0.45 },
@@ -483,6 +485,17 @@ window.World = (function () {
       case 'rug2':
         R(ctx, x, y, w, h, '#8e8a93');
         R(ctx, x + 2, y + 2, w - 4, h - 4, '#a19da7');
+        break;
+      case 'dishwasher':
+        // lava-louça embutida na bancada: tampo inox com o painel de botões na frente
+        R(ctx, x, y, w, h, '#34333b');
+        R(ctx, x + 1, y + 1, w - 4, h - 2, '#8e939c');
+        R(ctx, x + 2, y + 2, w - 6, h - 4, '#a4a9b2');
+        for (let j = 4; j < h - 3; j += 3) R(ctx, x + 2, y + j, w - 6, 1, '#979ca5');
+        R(ctx, x + w - 3, y, 3, h, '#25242b');
+        R(ctx, x + w - 3, y + 3, 1, h - 6, '#5a5f6a');
+        R(ctx, x + w - 3, y + 5, 1, 1, '#4cd07a');
+        R(ctx, x, y + h - 1, w, 1, '#25242b');
         break;
       case 'counter':
       case 'board':

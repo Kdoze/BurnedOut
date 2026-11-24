@@ -100,6 +100,7 @@ window.CONFIG = {
     'esse episódio aconteceu numa noite em que você estava na faculdade, e eu acabei sumindo por algumas horas.',
     'eu falei para você que eu não respondi porque meu celular estava com pouca bateria, o que não é mentira.',
     'mas aconteceram mais coisas que me impediram de te responder.',
+    'espero que essa experiência te faça entender pelo menos um pouco de como é a cabeça em um momento de crise.',
   ],
 
   // ---------------------------------------------------------------
@@ -166,6 +167,8 @@ window.CONFIG = {
     'ninguém aguenta mais isso',
     'se mate',
     'você deveria morrer',
+    'você é o que eu odeio',
+    'medo de morrer',
   ],
   // Palavras curtas que às vezes aparecem GRANDES no meio da tela.
   INTRUSIVE_BIG: ['SOZINHO', 'INÚTIL', 'CULPA SUA', 'SOME', 'FARDO', 'PESO', 'NINGUÉM', 'PERDÃO?', 'INSUFICIENTE', 'CANSADA'],
